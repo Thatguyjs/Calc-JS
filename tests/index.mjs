@@ -1,15 +1,7 @@
 import Calculator from "../src/include.mjs";
 
 
-const levels = {
-	ALL: 0,
-	ERROR: 1,
-	NONE: 2
-};
-
-const output = levels.ALL;
 let test_results = { total: 0, passed: 0, failed: [] };
-
 
 function test(string, expected) {
 	test_results.total++;
