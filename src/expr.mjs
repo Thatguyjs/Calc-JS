@@ -35,7 +35,7 @@ class Expr {
 		return exprs;
 	}
 
-	// Re-order tokens to follow the order of operations (idea from here: https://algotree.org/algorithms/stack_based/infix_to_postfix/)
+	// Re-order tokens to follow the order of operations (article here: https://algotree.org/algorithms/stack_based/infix_to_postfix/)
 	reorder() {
 		if(this.reordered) return false;
 

@@ -26,7 +26,6 @@ export default {
 
 	eval_tokens: function(tokens) {
 		const expr = new Expr(tokens);
-		expr.reorder();
 		return this.eval_expr(expr);
 	},
 

@@ -14,16 +14,8 @@ let test_results = { total: 0, passed: 0, failed: [] };
 function test(string, expected) {
 	test_results.total++;
 
-	const results = Calculator.eval(string);
-	let res_string = "";
-
-	for(let r in results) {
-		if(!results[r].error) res_string += results[r].value.toString();
-		else res_string += results[r].error.message;
-		res_string += ', ';
-	}
-
-	if(res_string) res_string = res_string.slice(0, -2);
+	const result = Calculator.eval(string);
+	const res_string = result.error ? result.error.message : result.value.toString();
 
 	if(res_string !== expected)
 		test_results.failed.push({ actual: res_string, expected, index: test_results.total - 1 });
@@ -32,8 +24,13 @@ function test(string, expected) {
 }
 
 
-// test('1', '1');
-test('1+2', '3');
+test("1", "1");
+test("110 + 50", "160");
+test("110 + 50 + (4 - 2 * 5) - 10 + 40", "184");
+test("(110 + 50) * (2 - 4)", "-320");
+test("2 ^ 5 * (3 - 4)", "-32");
+test("2 ^ 6", "64");
+test("0 - 8 - 0 - 5 ^ 3", "-133");
 
 
 console.log(`Passed ${test_results.passed} of ${test_results.total} tests.`);
