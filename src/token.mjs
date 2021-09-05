@@ -19,18 +19,23 @@ class Token {
 	type = null;
 	modifier = null; // Special properties
 
-	constructor(data) {
+	constructor(data, last_tk) {
 		this.data = data;
-		this.type = Token.char_type(data[0]); // All characters of 'data' should produce the same type
+		this.type = Token.char_type(data[0], last_tk); // All characters of 'data' should produce the same type
 		this.modifier = Token.tk_modifier(this); // Modifiers only apply to single-char tokens, so this is fine
 	}
 
 	// Return the token type of a single character
-	static char_type(char) {
+	static char_type(char, last_tk) {
 		const code = char.charCodeAt(0);
 
+		// Negative sign (counts as a number)
+		if(char === '-' && (!last_tk || (last_tk.type === Token.Operator && last_tk.modifier !== Token.mod.op.Postfix) || last_tk.data === ')')) {
+			return Token.Number;
+		}
+
 		// Numbers
-		if((code >= 48 && code <= 57) || char === '.') {
+		else if((code >= 48 && code <= 57) || char === '.') {
 			return Token.Number;
 		}
 

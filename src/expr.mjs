@@ -1,4 +1,5 @@
 import Token from "./token.mjs";
+import Err from "./error.mjs";
 
 
 class Expr {
@@ -12,6 +13,7 @@ class Expr {
 
 	tokens = [];
 	reordered = false;
+	error = Err.none();
 
 	constructor(tokens=[]) {
 		this.tokens = tokens;
@@ -52,8 +54,7 @@ class Expr {
 				}
 				else {
 					while(stack[0].data !== '(') {
-						let tk = stack.shift();
-						result.push(tk);
+						result.push(stack.shift());
 					}
 
 					stack.shift();
@@ -61,15 +62,12 @@ class Expr {
 			}
 			else if(token.type === Token.Operator) {
 				while(stack.length && Expr.precedence[stack[0].data] >= Expr.precedence[token.data]) {
-					let tk = stack.shift();
-					result.push(tk);
+					result.push(stack.shift());
 				}
 
 				stack.unshift(token);
 			}
-			else {
-				result.push(token);
-			}
+			else result.push(token);
 		}
 
 		this.tokens = result;

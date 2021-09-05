@@ -25,6 +25,7 @@ function test(string, expected) {
 
 
 test("1", "1");
+test("-1", "-1");
 test("110 + 50", "160");
 test("110 + 50 + (4 - 2 * 5) - 10 + 40", "184");
 test("(110 + 50) * (2 - 4)", "-320");
@@ -32,6 +33,7 @@ test("2 ^ 5 * (3 - 4)", "-32");
 test("2 ^ 6", "64");
 test("0 - 8 - 0 - 5 ^ 3", "-133");
 test("2E3", "2000");
+test("4! - 3", "21");
 
 
 console.log(`Passed ${test_results.passed} of ${test_results.total} tests.`);
