@@ -32,8 +32,8 @@ function test(string, expected) {
 }
 
 
-test('1', '1');
-test('1 + 2', '3');
+// test('1', '1');
+test('1+2', '3');
 
 
 console.log(`Passed ${test_results.passed} of ${test_results.total} tests.`);

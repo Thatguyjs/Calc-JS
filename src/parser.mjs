@@ -2,8 +2,11 @@ import Lexer from "./lexer.mjs";
 
 
 class Parser {
-	constructor() {
+	expr = [];
 
+	constructor(expr) {
+		this.expr = expr;
+		this.expr.reorder();
 	}
 
 	execute() {

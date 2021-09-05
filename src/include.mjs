@@ -9,6 +9,8 @@ export default {
 	eval: function(item) {
 		if(typeof item === 'string')
 			return this.eval_string(item);
+		else if(Array.isArray(item))
+			return this.eval_tokens(item);
 		else if(item instanceof Expr)
 			return this.eval_expr(item);
 
@@ -18,7 +20,14 @@ export default {
 
 	eval_string: function(str) {
 		const lexer = new Lexer(str);
-		return this.eval_expr(lexer.all());
+		return this.eval_tokens(lexer.all());
+	},
+
+
+	eval_tokens: function(tokens) {
+		const expr = new Expr(tokens);
+		expr.reorder();
+		return this.eval_expr(expr);
 	},
 
 

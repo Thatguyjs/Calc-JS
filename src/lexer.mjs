@@ -12,24 +12,23 @@ class Lexer {
 
 	// Generate the next token and consume it from `this.source`
 	next() {
-		let ch = this.source[this.index] || null;
+		let ch = this.source[this.index];
+		if(ch === undefined) return null;
+
 		let chars = "";
 		let type = Token.char_type(ch);
 		let next_type = type;
 
-		let tk = null;
-
 		while(next_type === type) {
 			chars += ch;
+
 			ch = this.source[++this.index];
 			if(ch === undefined) break;
 
 			next_type = Token.char_type(ch);
 		}
 
-		console.log("next():", this.source, ch, chars, type, next_type);
-
-		return tk;
+		return new Token(chars);
 	}
 
 	// Generate all tokens and completely consume `this.source`
@@ -38,7 +37,7 @@ class Lexer {
 		let tokens = [];
 
 		while(tk !== null) {
-			tokens.push(tk);
+			if(tk.type !== Token.None) tokens.push(tk);
 			tk = this.next();
 		}
 
