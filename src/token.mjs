@@ -34,8 +34,8 @@ class Token {
 			return Token.Number;
 		}
 
-		// Operators (in order: ! % * + - / ^)
-		else if([33, 37, 42, 43, 45, 47, 94].includes(code)) {
+		// Operators (in order: ! % * + - / ^ E)
+		else if([33, 37, 42, 43, 45, 47, 94].includes(code) || char === 'E') {
 			return Token.Operator;
 		}
 

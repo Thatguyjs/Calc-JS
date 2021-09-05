@@ -50,6 +50,10 @@ class Parser {
 					case '^':
 						res_stack.unshift(n2 ** n1);
 						break;
+
+					case 'E':
+						res_stack.unshift(n2 * (10 ** n1));
+						break;
 				}
 			}
 		}
