@@ -13,11 +13,16 @@ class Parser {
 	}
 
 	execute() {
-		this.result.error = 0;
+		this.result.error = Err.none();
 		let res_stack = [];
 
 		while(this.expr.tokens.length) {
 			const token = this.expr.tokens.shift();
+
+			if(token.error.has_error()) {
+				this.result.error = token.error;
+				return this.result;
+			}
 
 			if(token.type === Token.Number) {
 				res_stack.unshift(+token.data);
@@ -63,7 +68,7 @@ class Parser {
 					switch(token.data) {
 						case '!':
 							if(num < 0) {
-								this.result.error = new Err(Err.InvalidOperation, "Invalid Operation");
+								this.result.error = new Err(Err.InvalidOperation);
 								return this.result;
 							}
 

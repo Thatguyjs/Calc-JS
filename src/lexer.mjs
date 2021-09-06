@@ -28,7 +28,10 @@ class Lexer {
 			next_type = Token.char_type(ch, last_tk);
 		}
 
-		return new Token(chars, last_tk);
+		if(chars.startsWith('-') && type === Token.Number && Token.is_negative(last_tk))
+			return [new Token('-1', last_tk), new Token('*', last_tk), new Token(chars.slice(1), last_tk)];
+
+		return [new Token(chars, last_tk)];
 	}
 
 	// Generate all tokens and completely consume `this.source`
@@ -37,7 +40,7 @@ class Lexer {
 		let tokens = [];
 
 		while(tk !== null) {
-			if(tk.type !== Token.None) tokens.push(tk);
+			if(tk.type !== Token.None) tokens.push(...tk);
 			tk = this.next(tk);
 		}
 

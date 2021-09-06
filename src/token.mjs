@@ -1,3 +1,6 @@
+import Err from "./error.mjs";
+
+
 class Token {
 	static None = 0;
 	static Number = 1;
@@ -18,24 +21,47 @@ class Token {
 	data = "";
 	type = null;
 	modifier = null; // Special properties
+	error = Err.none();
 
 	constructor(data, last_tk) {
 		this.data = data;
 		this.type = Token.char_type(data[0], last_tk); // All characters of 'data' should produce the same type
 		this.modifier = Token.tk_modifier(this); // Modifiers only apply to single-char tokens, so this is fine
+		this.error = Token.#tk_error(last_tk) ?? this.error;
+	}
+
+
+	// Check if a '-' is actually a negative sign
+	static is_negative(last_tk) {
+		return !last_tk || last_tk.data === '(' ||
+			(last_tk.type === Token.Operator && last_tk.modifier !== Token.mod.op.postfix);
+	}
+
+	// Find errors with tokens
+	static #tk_error(last_tk) {
+		if(this.data === ')' && last_tk.data === '(')
+			return new Err(Err.InvalidOperation);
+
+		if(this.type === Token.Operator && this.modifier !== Token.mod.op.Prefix) {
+			if(!last_tk || last_tk.data === '(' || (last_tk.type === Token.Operator && last_tk.modifier !== Token.mod.op.Postfix))
+				return new Err(Err.InvalidOperation);
+		}
+
+		if(this.type === Token.Number && last_tk.type === Token.Number)
+			return new Err(Err.MissingOperation);
 	}
 
 	// Return the token type of a single character
 	static char_type(char, last_tk) {
 		const code = char.charCodeAt(0);
 
-		// Negative sign (counts as a number)
-		if(char === '-' && (!last_tk || (last_tk.type === Token.Operator && last_tk.modifier !== Token.mod.op.Postfix) || last_tk.data === ')')) {
+		// Negative numbers
+		if(char === '-' && Token.is_negative(last_tk)) {
 			return Token.Number;
 		}
 
 		// Numbers
-		else if((code >= 48 && code <= 57) || char === '.') {
+		if((code >= 48 && code <= 57) || char === '.') {
 			return Token.Number;
 		}
 
