@@ -1,3 +1,4 @@
+import addons from "./addons.mjs";
 import Calculator from "../src/include.mjs";
 
 
@@ -6,7 +7,7 @@ let test_results = { total: 0, passed: 0, failed: [] };
 function test(string, expected) {
 	test_results.total++;
 
-	const result = Calculator.eval(string);
+	const result = Calculator.eval(string, addons.constants, addons.functions);
 	const res_string = result.error.has_error() ? result.error.message : result.value.toString();
 
 	if(res_string !== expected)
@@ -41,7 +42,7 @@ test("2 ^ 6", "64");
 test("10E2", "1000");
 // test("30E-1", "3");
 test("6!", "720");
-// test("0.1 + 0.2", "0.3");
+test("0.1 + 0.2", "0.3");
 
 
 

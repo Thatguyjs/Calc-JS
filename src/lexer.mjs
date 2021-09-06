@@ -6,6 +6,9 @@ class Lexer {
 	source = "";
 	index = 0;
 
+	constants = {};
+	functions = {};
+
 	constructor(source) {
 		this.source = source;
 	}

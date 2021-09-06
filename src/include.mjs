@@ -6,32 +6,32 @@ import Parser from "./parser.mjs";
 
 export default {
 
-	eval: function(item) {
+	eval: function(item, constants, functions) {
 		if(typeof item === 'string')
-			return this.eval_string(item);
+			return this.eval_string(item, constants, functions);
 		else if(Array.isArray(item))
-			return this.eval_tokens(item);
+			return this.eval_tokens(item, constants, functions);
 		else if(item instanceof Expr)
-			return this.eval_expr(item);
+			return this.eval_expr(item, constants, functions);
 
-		else throw new Error("Invalid argument: " + item);
+		else throw new TypeError("Invalid argument: " + item);
 	},
 
 
-	eval_string: function(str) {
-		const lexer = new Lexer(str);
+	eval_string: function(str, constants, functions) {
+		const lexer = new Lexer(str, constants, functions);
 		return this.eval_tokens(lexer.all());
 	},
 
 
-	eval_tokens: function(tokens) {
-		const expr = new Expr(tokens);
+	eval_tokens: function(tokens, constants, functions) {
+		const expr = new Expr(tokens, constants, functions);
 		return this.eval_expr(expr);
 	},
 
 
-	eval_expr: function(expr) {
-		const parser = new Parser(expr);
+	eval_expr: function(expr, constants, functions) {
+		const parser = new Parser(expr, constants, functions);
 		return parser.execute();
 	}
 

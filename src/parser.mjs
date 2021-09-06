@@ -7,9 +7,22 @@ class Parser {
 	expr = [];
 	result = { error: Err.none(), value: null };
 
+	static precision = 10; // Default rounding precision
+
 	constructor(expr) {
 		this.expr = expr;
 		this.expr.reorder();
+	}
+
+	// Round a number to a fixed precision
+	static round(number, precision=this.precision) {
+		if(typeof number !== 'number') throw new TypeError("round(): Expected a number, got a " + typeof number);
+		if(number.toString().includes('e')) return number;
+
+		const res = +(Math.round(number + 'e' + precision) + 'e-' + precision);
+
+		if(isNaN(res)) return number;
+		return +res;
 	}
 
 	execute() {
@@ -34,31 +47,31 @@ class Parser {
 
 					switch(token.data) {
 						case '+':
-							res_stack.unshift(n2 + n1);
+							res_stack.unshift(Parser.round(n2 + n1));
 							break;
 
 						case '-':
-							res_stack.unshift(n2 - n1);
+							res_stack.unshift(Parser.round(n2 - n1));
 							break;
 
 						case '*':
-							res_stack.unshift(n2 * n1);
+							res_stack.unshift(Parser.round(n2 * n1));
 							break;
 
 						case '/':
-							res_stack.unshift(n2 / n1);
+							res_stack.unshift(Parser.round(n2 / n1));
 							break;
 
 						case '%':
-							res_stack.unshift(n2 % n1);
+							res_stack.unshift(Parser.round(n2 % n1));
 							break;
 
 						case '^':
-							res_stack.unshift(n2 ** n1);
+							res_stack.unshift(Parser.round(n2 ** n1));
 							break;
 
 						case 'E':
-							res_stack.unshift(n2 * (10 ** n1));
+							res_stack.unshift(Parser.round(n2 * (10 ** n1)));
 							break;
 					}
 				}
@@ -76,7 +89,7 @@ class Parser {
 								num *= i;
 							}
 
-							res_stack.unshift(num);
+							res_stack.unshift(Parser.round(num));
 							break;
 					}
 				}
