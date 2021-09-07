@@ -3,12 +3,13 @@ import Err from "./error.mjs";
 
 class Token {
 	static None = 0;
-	static Number = 1;
-	static Operator = 2;
-	static Paren = 3;
-	static Name = 4;
-	static Equals = 5;
-	static Comma = 6;
+	static Unknown = 1;
+	static Number = 2;
+	static Operator = 3;
+	static Paren = 4;
+	static Name = 5;
+	static Equals = 6;
+	static Comma = 7;
 
 	static mod = {
 		op: {
@@ -23,10 +24,12 @@ class Token {
 	modifier = null; // Special properties
 	error = Err.none();
 
-	constructor(data, last_tk) {
+	constructor(data, last_tk, force_type=null) {
 		this.data = data;
-		this.type = Token.char_type(data[0], last_tk); // All characters of 'data' should produce the same type
-		this.modifier = Token.tk_modifier(this); // Modifiers only apply to single-char tokens, so this is fine
+		if(force_type !== null) this.type = force_type;
+		else this.type = Token.char_type(data[0], last_tk); // All characters of 'data' should produce the same type
+
+		this.modifier = Token.tk_modifier(this, last_tk); // Modifiers only apply to single-char tokens, so this is fine
 		this.error = Token.#tk_error(last_tk) ?? this.error;
 	}
 
@@ -34,7 +37,7 @@ class Token {
 	// Check if a '-' is actually a negative sign
 	static is_negative(last_tk) {
 		return !last_tk || last_tk.data === '(' ||
-			(last_tk.type === Token.Operator && last_tk.modifier !== Token.mod.op.postfix);
+			(last_tk.type === Token.Operator && last_tk.modifier !== Token.mod.op.Postfix);
 	}
 
 	// Find errors with tokens
@@ -54,11 +57,6 @@ class Token {
 	// Return the token type of a single character
 	static char_type(char, last_tk) {
 		const code = char.charCodeAt(0);
-
-		// Negative numbers
-		if(char === '-' && Token.is_negative(last_tk)) {
-			return Token.Number;
-		}
 
 		// Numbers
 		if((code >= 48 && code <= 57) || char === '.') {
@@ -94,12 +92,15 @@ class Token {
 		else if([32, 9, 10].includes(code)) {
 			return Token.None;
 		}
+
+		return Token.Unknown;
 	}
 
 	// Return the token modifier (if applicible) of a single character
-	static tk_modifier(token) {
+	static tk_modifier(token, last_tk) {
 		if(token.type === Token.Operator) {
 			if(token.data === '!') return Token.mod.op.Postfix;
+			else if(token.data === '-' && Token.is_negative(last_tk)) return Token.mod.op.Prefix;
 			else return Token.mod.op.Infix;
 		}
 

@@ -4,11 +4,21 @@ import Err from "./error.mjs";
 
 class Expr {
 	static precedence = {
-		'(': 0,
-		'+': 1, '-': 1,
-		'*': 2, '/': 2, '%': 2,
-		'^': 3,
-		'E': 4, '!': 4
+		prefix: {
+			'-': 2
+		},
+		infix: {
+			'+': 1, '-': 1,
+			'*': 2, '/': 2, '%': 2,
+			'^': 3,
+			'E': 4
+		},
+		postfix: {
+			'!': 4
+		},
+		other: {
+			'(': 0
+		}
 	};
 
 	tokens = [];
@@ -37,6 +47,44 @@ class Expr {
 		return exprs;
 	}
 
+	static get_precedence(token) {
+		switch(token.modifier) {
+			case Token.mod.op.Prefix:
+				return Expr.precedence.prefix[token.data];
+
+			case Token.mod.op.Infix:
+				return Expr.precedence.infix[token.data];
+
+			case Token.mod.op.Postfix:
+				return Expr.precedence.postfix[token.data];
+
+			default:
+				return Expr.precedence.other[token.data];
+		}
+	}
+
+	// Correct prefix operators
+	correct_prefix() {
+		let result = [];
+
+		while(this.tokens.length) {
+			let token = this.tokens.shift();
+
+			if(token.type === Token.Operator && token.modifier === Token.mod.op.Prefix) {
+				result.push(
+					new Token('('),
+					new Token('0'),
+					new Token('-', new Token('0')),
+					this.tokens.shift(),
+					new Token(')')
+				);
+			}
+			else result.push(token);
+		}
+
+		this.tokens = result;
+	}
+
 	// Re-order tokens to follow the order of operations (article here: https://algotree.org/algorithms/stack_based/infix_to_postfix/)
 	reorder() {
 		if(this.reordered) return false;
@@ -61,7 +109,7 @@ class Expr {
 				}
 			}
 			else if(token.type === Token.Operator) {
-				while(stack.length && Expr.precedence[stack[0].data] >= Expr.precedence[token.data]) {
+				while(stack.length && Expr.get_precedence(stack[0]) >= Expr.get_precedence(token)) {
 					result.push(stack.shift());
 				}
 

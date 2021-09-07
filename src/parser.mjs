@@ -11,6 +11,7 @@ class Parser {
 
 	constructor(expr) {
 		this.expr = expr;
+		this.expr.correct_prefix();
 		this.expr.reorder();
 	}
 
@@ -41,7 +42,16 @@ class Parser {
 				res_stack.unshift(+token.data);
 			}
 			else {
-				if(token.modifier === Token.mod.op.Infix) {
+				if(token.modifier === Token.mod.op.Prefix) {
+					let num = res_stack.shift();
+
+					switch(token.data) {
+						case '-':
+							res_stack.unshift(-num);
+							break;
+					}
+				}
+				else if(token.modifier === Token.mod.op.Infix) {
 					let n1 = res_stack.shift();
 					let n2 = res_stack.shift();
 

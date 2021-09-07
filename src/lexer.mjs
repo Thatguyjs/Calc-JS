@@ -13,14 +13,26 @@ class Lexer {
 		this.source = source;
 	}
 
-	// Generate the next token and consume it from `this.source`
+	// Generate the next token and increment `this.index` accordingly
 	next(last_tk) {
 		let ch = this.source[this.index];
 		if(ch === undefined) return null;
 
 		let chars = "";
 		let type = Token.char_type(ch);
+
+		while(ch && type === Token.None) {
+			ch = this.source[++this.index];
+			type = Token.char_type(ch ?? '');
+		}
+
 		let next_type = type;
+
+		// Stop searching if the type only uses 1 character
+		if(type !== Token.Number && type !== Token.Name) {
+			this.index++;
+			return new Token(ch, last_tk);
+		}
 
 		while(next_type === type) {
 			chars += ch;
@@ -31,19 +43,16 @@ class Lexer {
 			next_type = Token.char_type(ch, last_tk);
 		}
 
-		if(chars.startsWith('-') && type === Token.Number && Token.is_negative(last_tk))
-			return [new Token('-1', last_tk), new Token('*', last_tk), new Token(chars.slice(1), last_tk)];
-
-		return [new Token(chars, last_tk)];
+		return new Token(chars, last_tk);
 	}
 
-	// Generate all tokens and completely consume `this.source`
+	// Generate all tokens
 	all() {
 		let tk = this.next();
 		let tokens = [];
 
 		while(tk !== null) {
-			if(tk.type !== Token.None) tokens.push(...tk);
+			if(tk.type !== Token.None) tokens.push(tk);
 			tk = this.next(tk);
 		}
 
