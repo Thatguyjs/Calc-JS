@@ -1,41 +1,26 @@
+import Err from "./error.mjs";
 import Token from "./token.mjs";
-import Expr from "./expr.mjs";
 import Lexer from "./lexer.mjs";
+import Formatter from "./formatter.mjs";
 import Parser from "./parser.mjs";
 
 
 export default {
+	eval: function(string) {
+		if(typeof string !== 'string') throw new TypeError("Invalid argument: " + string);
 
-	eval: function(item, constants, functions) {
-		if(typeof item === 'string')
-			return this.eval_string(item, constants, functions);
-		else if(Array.isArray(item))
-			return this.eval_tokens(item, constants, functions);
-		else if(item instanceof Expr)
-			return this.eval_expr(item, constants, functions);
+		const lexer = new Lexer(string);
+		const tokens = lexer.all();
 
-		else throw new TypeError("Invalid argument: " + item);
-	},
+		const formatter = new Formatter(tokens);
+		const exprs = formatter.all();
 
+		const parser = new Parser(exprs);
+		const result = parser.next(); // TODO: Change to '.all()' once multiple expressions are supported
 
-	eval_string: function(str, constants, functions) {
-		const lexer = new Lexer(str, constants, functions);
-		return this.eval_tokens(lexer.all());
-	},
-
-
-	eval_tokens: function(tokens, constants, functions) {
-		const expr = new Expr(tokens, constants, functions);
-		return this.eval_expr(expr);
-	},
-
-
-	eval_expr: function(expr, constants, functions) {
-		const parser = new Parser(expr, constants, functions);
-		return parser.execute();
+		return result;
 	}
-
 };
 
 
-export { Token, Expr, Lexer, Parser };
+export { Token, Lexer, }; // Expr, Parser };

@@ -1,58 +1,107 @@
 import Token from "./token.mjs";
-import Expr from "./expr.mjs";
 
 
 class Lexer {
 	source = "";
 	index = 0;
 
-	constants = {};
-	functions = {};
-
 	constructor(source) {
+		if(typeof source !== 'string')
+			throw new TypeError(`Expected 'source' to be a string, got ${typeof source} instead.`);
+
 		this.source = source;
 	}
 
-	// Generate the next token and increment `this.index` accordingly
+
+	// Check if a '-' should be interpreted as a negative instead of a minus
+	static is_negative(last_tk) {
+		return !last_tk || last_tk === '(' ||
+			(last_tk.type === Token.Operator && last_tk.modifier.op_type === 'infix');
+	}
+
+	// Get the Token type of a character
+	static char_type(char, last_tk) {
+		if(/\s/.test(char))
+			return Token.None;
+
+		if(char === '-' && Lexer.is_negative(last_tk))
+			return Token.Number;
+
+		if((char >= '0' && char <= '9') || char === '.')
+			return Token.Number;
+
+		if(['+', '-', '*', '/', '%', '^', 'E'].includes(char))
+			return Token.Operator;
+
+		if(char === '(' || char === ')')
+			return Token.Paren;
+
+		if(char === ',')
+			return Token.Comma;
+
+		return Token.Unknown;
+	}
+
+	// Get the Token modifier
+	static token_mod(data, type) {
+		if(type === Token.Number) {
+			if(data.startsWith('-')) return { negative: true };
+			else return { negative: false };
+		}
+		else if(type === Token.Operator) {
+			return { op_type: 'infix' }; // TODO: Support other operator types
+		}
+	}
+
+
+	// Get the next token from `this.source`
 	next(last_tk) {
 		let ch = this.source[this.index];
-		if(ch === undefined) return null;
+		if(!ch) return null;
+
+		let type = Lexer.char_type(ch);
+
+		// Skip whitespace
+		while(type === Token.None) {
+			ch = this.source[++this.index];
+			if(!ch) return null;
+			type = Lexer.char_type(ch, last_tk);
+		}
+
+		// 1-character tokens
+		if(type !== Token.Number) {
+			this.index++;
+			return new Token(type, ch, Lexer.token_mod(ch, type));
+		}
 
 		let chars = "";
-		let type = Token.char_type(ch);
-
-		while(ch && type === Token.None) {
-			ch = this.source[++this.index];
-			type = Token.char_type(ch ?? '');
-		}
-
 		let next_type = type;
-
-		// Stop searching if the type only uses 1 character
-		if(type !== Token.Number && type !== Token.Name) {
-			this.index++;
-			return new Token(ch, last_tk);
-		}
 
 		while(next_type === type) {
 			chars += ch;
 
 			ch = this.source[++this.index];
-			if(ch === undefined) break;
-
-			next_type = Token.char_type(ch, last_tk);
+			if(!ch) break;
+			next_type = Lexer.char_type(ch, last_tk);
 		}
 
-		return new Token(chars, last_tk);
+		const mod = Lexer.token_mod(chars, type);
+
+		if(type === Token.Number) {
+			if(mod.negative) chars = chars.slice(1);
+			chars = +chars;
+		}
+
+		return new Token(type, chars, mod);
 	}
 
-	// Generate all tokens
+	// Get all tokens
 	all() {
 		let tk = this.next();
 		let tokens = [];
 
 		while(tk !== null) {
-			if(tk.type !== Token.None) tokens.push(tk);
+			tokens.push(tk);
 			tk = this.next(tk);
 		}
 
