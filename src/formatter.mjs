@@ -28,18 +28,24 @@ class Formatter {
 		let stack = [new Token(Token.Paren, '(')];
 		tokens.push(new Token(Token.Paren, ')'));
 
+		let depth = 0;
+
 		while(tokens.length) {
 			let token = tokens.shift();
+			token.modifier.depth = depth;
 
 			if(token.type === Token.Paren) {
 				if(token.data === '(') {
 					stack.unshift(token);
+					depth++;
 				}
 				else {
 					while(stack.length && stack[0].data !== '(') {
 						result.push(stack.shift());
 					}
+
 					stack.shift();
+					depth--;
 				}
 			}
 			else if(token.type === Token.Operator) {

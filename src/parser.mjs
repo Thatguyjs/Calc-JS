@@ -2,6 +2,21 @@ import Err from "./error.mjs";
 import Token from "./token.mjs";
 
 
+// Round a number to an arbitrary precision
+function round(number, precision) {
+	if(typeof number !== 'number')
+		throw new TypeError(`round() expected a number, got a ${typeof number}`);
+	if(typeof precision !== 'number')
+		throw new TypeError(`round() expected a precision, got a ${typeof precision}`);
+
+	if(number.toString().includes('e')) return number;
+
+	const rounded = +(Math.round(number + 'e' + precision) + 'e-' + precision);
+	if(isNaN(rounded)) return number;
+	return rounded;
+}
+
+
 class Parser {
 	exprs = [];
 
@@ -12,35 +27,40 @@ class Parser {
 	static operate(op, t1, t2) {
 		let value = NaN;
 
-		switch(op) {
+		if(t1.modifier.negative && t1.modifier.depth > op.modifier.depth) {
+			t1.data = -t1.data;
+			t1.modifier.negative = false;
+		}
+
+		switch(op.data) {
 			case '+':
-				value = t1.data + t2.data;
+				value = round(t1.data + t2.data, 10);
 				break;
 			case '-':
-				value = t1.data - t2.data;
+				value = round(t1.data - t2.data, 10);
 				break;
 			case '*':
-				value = t1.data * t2.data;
+				value = round(t1.data * t2.data, 10);
 				break;
 			case '/':
-				value = t1.data / t2.data;
+				value = round(t1.data / t2.data, 10);
 				break;
 			case '%':
-				value = t1.data % t2.data;
+				value = round(t1.data % t2.data, 10);
 				break;
 			case '^':
 				if(t2.modifier.negative) {
 					t2.data = -t2.data;
 					t2.modifier.negative = false;
 				}
-				value = t1.data ** t2.data;
+				value = round(t1.data ** t2.data, 10);
 				break;
 			case 'E':
 				if(t2.modifier.negative) {
 					t2.data = -t2.data;
 					t2.modifier.negative = false;
 				}
-				value = t1.data * (10 ** t2.data);
+				value = round(t1.data * (10 ** t2.data), 10);
 				break;
 		}
 
@@ -66,7 +86,7 @@ class Parser {
 				let t1 = num_stack.shift();
 				let t2 = num_stack.shift();
 
-				num_stack.unshift(Parser.operate(token.data, t2, t1));
+				num_stack.unshift(Parser.operate(token, t2, t1));
 			}
 		}
 
