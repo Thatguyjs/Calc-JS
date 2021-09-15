@@ -36,14 +36,14 @@ class Formatter {
 					stack.unshift(token);
 				}
 				else {
-					while(stack[0].data !== '(') {
+					while(stack.length && stack[0].data !== '(') {
 						result.push(stack.shift());
 					}
 					stack.shift();
 				}
 			}
 			else if(token.type === Token.Operator) {
-				while(stack.length && Formatter.get_precedence(stack[0]) >= Formatter.get_precedence[token]) {
+				while(stack.length && Formatter.get_precedence(stack[0]) >= Formatter.get_precedence(token)) {
 					result.push(stack.shift());
 				}
 				stack.unshift(token);
