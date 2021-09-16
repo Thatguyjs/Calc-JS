@@ -23,4 +23,4 @@ export default {
 };
 
 
-export { Token, Lexer, }; // Expr, Parser };
+export { Err, Token, Lexer, Formatter, Parser };

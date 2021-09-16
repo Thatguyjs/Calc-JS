@@ -22,7 +22,7 @@ class Formatter {
 		return Formatter.precedence[token.data];
 	}
 
-	// Correctly order tokens using infix to prefix
+	// Correctly order tokens converting from infix to prefix
 	static order(tokens) {
 		let result = [];
 		let stack = [new Token(Token.Paren, '(')];
@@ -79,7 +79,7 @@ class Formatter {
 		return groups;
 	}
 
-	// Group & order the tokens
+	// Group & order all tokens
 	all() {
 		let groups = this.group();
 
