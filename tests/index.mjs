@@ -8,7 +8,13 @@ function test(string, expected) {
 	test_results.total++;
 
 	const result = Calculator.eval(string, addons.constants, addons.functions);
-	const res_string = result.error.has_error() ? result.error.message : result.value.toString();
+	let res_string = "";
+
+	for(let r in result) {
+		res_string += (result[r].error.has_error() ? result[r].error.message : result[r].value.toString()) + ', ';
+	}
+
+	res_string = res_string.slice(0, -2);
 
 	if(res_string !== expected)
 		test_results.failed.push({ string, actual: res_string, expected, index: test_results.total - 1 });
@@ -48,6 +54,11 @@ test("30E-1", "3");
 test("30E-1 - 7", "-4");
 // test_("6!", "720");
 test("0.1 + 0.2", "0.3");
+
+test("1 + 1, 2 + 3", "2, 5");
+test("7 - 21, 3 * 5", "-14, 15");
+test("5 / 2, 0.25 * 4 / 2", "2.5, 0.5");
+test("3 - 2, 2, 5 / 2 + 0.5", "1, 2, 3");
 
 
 

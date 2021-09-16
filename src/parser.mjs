@@ -72,8 +72,9 @@ class Parser {
 
 	// Parse the next expression
 	next() {
-		let error = Err.none();
+		if(!this.exprs[0]) return null;
 
+		let error = Err.none();
 		let num_stack = [];
 
 		while(this.exprs[0].length) {
@@ -93,7 +94,21 @@ class Parser {
 		if(num_stack[0].modifier.negative)
 			num_stack[0].data = -num_stack[0].data;
 
+		this.exprs.shift();
 		return { value: num_stack[0].data, error };
+	}
+
+	// Parse all expressions
+	all() {
+		let results = [];
+		let result = this.next();
+
+		while(result) {
+			results.push(result);
+			result = this.next();
+		}
+
+		return results;
 	}
 }
 

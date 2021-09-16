@@ -16,7 +16,7 @@ export default {
 		const exprs = formatter.all();
 
 		const parser = new Parser(exprs);
-		const result = parser.next(); // TODO: Change to '.all()' once multiple expressions are supported
+		const result = parser.all();
 
 		return result;
 	}
