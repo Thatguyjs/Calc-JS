@@ -9,7 +9,7 @@ after a little more work is done
 - [x] Basic operators (prefix & postfix)
 - [x] Parentheses
 - [x] Operator precedence (aka 'order of operations')
-- [ ] Constants
+- [x] Constants
 - [ ] Functions
   - [ ] Parameters
   - [ ] Parameter lists
