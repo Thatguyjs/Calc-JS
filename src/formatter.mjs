@@ -22,6 +22,22 @@ class Formatter {
 		return Formatter.precedence[token.data];
 	}
 
+	// Insert tokens if they were implicitly used
+	static insert_tokens(token, token_list) {
+		const first_tk = token_list[0];
+		if(!first_tk) return;
+
+		// Implicit multiplication
+		if(token.type === Token.Number && first_tk.data === '(')
+			token_list.unshift(new Token(Token.Operator, '*', { op_type: 'infix' }));
+
+		else if(token.data === ')' && first_tk.type === Token.Number)
+			token_list.unshift(new Token(Token.Operator, '*', { op_type: 'infix' }));
+
+		else if(token.type === Token.Number && first_tk.type === Token.Name)
+			token_list.unshift(new Token(Token.Operator, '*', { op_type: 'infix' }));
+	}
+
 	// Correctly order tokens converting from infix to prefix
 	static order(tokens) {
 		let result = [];
@@ -33,6 +49,9 @@ class Formatter {
 		while(tokens.length) {
 			let token = tokens.shift();
 			token.modifier.depth = depth;
+
+			// Add implicit tokens
+			Formatter.insert_tokens(token, tokens);
 
 			if(token.type === Token.Paren) {
 				if(token.data === '(') {

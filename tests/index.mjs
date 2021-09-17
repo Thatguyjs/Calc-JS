@@ -71,6 +71,16 @@ test("pi * 2.5", "7.853981634");
 // test("floor(4.99)", "4");
 // test("ceil(2.01)", "3");
 
+test("2(3)", "6");
+test("(7)2", "14");
+test("3(2+3)", "15");
+test("2.5pi", "7.853981634");
+// test("a = 3, 6a", "18");
+// test("2sqrt(169)", "26");
+// test("sqrt(169)3", "39");
+// test("(2)3!", "12");
+// test("a = 11, b = 3, (a)b + 1", "34");
+
 
 console.log(`Passed ${test_results.passed} of ${test_results.total} tests.`);
 
