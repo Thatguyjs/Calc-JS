@@ -6,7 +6,7 @@ import Parser from "./parser.mjs";
 
 
 export default {
-	eval: function(string) {
+	eval: function(string, constants={}, functions={}) {
 		if(typeof string !== 'string') throw new TypeError("Invalid argument: " + string);
 
 		const lexer = new Lexer(string);
@@ -18,7 +18,7 @@ export default {
 		const formatter = new Formatter(tokens.tokens);
 		const exprs = formatter.all();
 
-		const parser = new Parser(exprs);
+		const parser = new Parser(exprs, constants, functions);
 		const result = parser.all();
 
 		return result;

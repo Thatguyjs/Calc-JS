@@ -60,6 +60,16 @@ test("7 - 21, 3 * 5", "-14, 15");
 test("5 / 2, 0.25 * 4 / 2", "2.5, 0.5");
 test("3 - 2, 2, 5 / 2 + 0.5", "1, 2, 3");
 
+test("pi", "3.1415926536");
+test("e", "2.7182818285");
+test("pi * 2.5", "7.853981634");
+// test("sqrt(36)", "6");
+// test("sum(2, 5, 9, 16)", "32");
+// test("sum()", "0");
+// test("round(0.49)", "0");
+// test("round(0.5)", "1");
+// test("floor(4.99)", "4");
+// test("ceil(2.01)", "3");
 
 
 console.log(`Passed ${test_results.passed} of ${test_results.total} tests.`);

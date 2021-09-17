@@ -19,10 +19,29 @@ function round(number, precision) {
 
 class Parser {
 	exprs = [];
+	constants = {};
+	functions = {};
 
-	constructor(exprs) {
+	constructor(exprs, constants={}, functions={}) {
 		this.exprs = exprs;
+		this.constants = constants;
+		this.functions = functions;
 	}
+
+	add_constant(name, value, override=false) {
+		if(name in this.constants && !override) return false;
+
+		this.constants[name] = value;
+		return true;
+	}
+
+	add_function(name, callback, override=false) {
+		if(name in this.functions && !override) return false;
+
+		this.functions[name] = callback;
+		return true;
+	}
+
 
 	static operate(op, t1, t2) {
 		let value = NaN;
@@ -83,6 +102,14 @@ class Parser {
 			if(token.type === Token.Number) {
 				num_stack.unshift(token);
 			}
+			else if(token.type === Token.Name) {
+				if(token.data in this.constants)
+					num_stack.unshift(new Token(Token.Number, this.constants[token.data]));
+				else {
+					error = new Err(Err.UnknownVariable);
+					break;
+				}
+			}
 			else {
 				let t1 = num_stack.shift();
 				let t2 = num_stack.shift();
@@ -91,11 +118,13 @@ class Parser {
 			}
 		}
 
-		if(num_stack[0].modifier.negative)
+		if(!error.has_error() && num_stack[0].modifier.negative)
 			num_stack[0].data = -num_stack[0].data;
 
 		this.exprs.shift();
-		return { value: num_stack[0].data, error };
+
+		if(error.has_error()) return { value: 0, error };
+		else return { value: round(num_stack[0].data, 10), error };
 	}
 
 	// Parse all expressions
