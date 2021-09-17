@@ -4,7 +4,8 @@ class Token {
 	static Number = 2;
 	static Operator = 3;
 	static Paren = 4;
-	static Comma = 5;
+	static Name = 5;
+	static Comma = 6;
 
 	type = Token.None;
 	data = "";

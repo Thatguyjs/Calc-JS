@@ -12,7 +12,10 @@ export default {
 		const lexer = new Lexer(string);
 		const tokens = lexer.all();
 
-		const formatter = new Formatter(tokens);
+		if(tokens.error.has_error())
+			return [{ error: tokens.error }];
+
+		const formatter = new Formatter(tokens.tokens);
 		const exprs = formatter.all();
 
 		const parser = new Parser(exprs);

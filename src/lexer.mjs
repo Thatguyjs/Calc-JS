@@ -1,3 +1,4 @@
+import Err from "./error.mjs";
 import Token from "./token.mjs";
 
 
@@ -36,6 +37,9 @@ class Lexer {
 		if(char === '(' || char === ')')
 			return Token.Paren;
 
+		if(char >= 'a' && char <= 'z')
+			return Token.Name;
+
 		if(char === ',')
 			return Token.Comma;
 
@@ -54,6 +58,15 @@ class Lexer {
 	}
 
 
+	// Check for errors with token sequences
+	token_error(last_tk, tk) {
+		if(last_tk.data === '(' && tk.data === ')')
+			return new Err(Err.InvalidExpression);
+
+		return Err.none();
+	}
+
+
 	// Get the next token from `this.source`
 	next(last_tk) {
 		let ch = this.source[this.index];
@@ -69,7 +82,7 @@ class Lexer {
 		}
 
 		// 1-character tokens
-		if(type !== Token.Number) {
+		if(type !== Token.Number && type !== Token.Name) {
 			this.index++;
 			return new Token(type, ch, Lexer.token_mod(ch, type));
 		}
@@ -95,17 +108,21 @@ class Lexer {
 		return new Token(type, chars, mod);
 	}
 
-	// Get all tokens
+	// Get all tokens and check for errors
 	all() {
 		let tk = this.next();
 		let tokens = [];
 
 		while(tk !== null) {
 			tokens.push(tk);
+			const last_tk = tk;
 			tk = this.next(tk);
+
+			const error = this.token_error(last_tk, tk);
+			if(error.has_error()) return { tokens: [], error };
 		}
 
-		return tokens;
+		return { tokens, error: Err.none() };
 	}
 }
 
