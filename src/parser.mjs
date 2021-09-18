@@ -81,12 +81,19 @@ class Parser {
 				}
 				value = round(t1.data * (10 ** t2.data), 10);
 				break;
+			case '!':
+				if(t1.data < 0) {
+					return { token: null, error: new Err(Err.InvalidOperation) };
+				}
+				value = t1.data;
+				while(--t1.data > 1) value *= t1.data;
+				break;
 		}
 
 		if(t1.modifier.negative || t2.modifier.negative)
 			value = -value;
 
-		return new Token(Token.Number, value, { negative: false });
+		return { token: new Token(Token.Number, value, { negative: false }), error: Err.none() };
 	}
 
 	// Parse the next expression
@@ -111,10 +118,24 @@ class Parser {
 				}
 			}
 			else {
-				let t1 = num_stack.shift();
-				let t2 = num_stack.shift();
+				if(token.modifier.op_type === 'infix') {
+					let t1 = num_stack.shift();
+					let t2 = num_stack.shift();
+					let res = Parser.operate(token, t2, t1);
 
-				num_stack.unshift(Parser.operate(token, t2, t1));
+					if(res.error.has_error())
+						return { value: 0, error: res.error };
+
+					num_stack.unshift(res.token);
+				}
+				else if(token.modifier.op_type === 'postfix') {
+					let res = Parser.operate(token, num_stack.shift(), new Token(Token.None));
+
+					if(res.error.has_error())
+						return { value: 0, error: res.error };
+
+					num_stack.unshift(res.token);
+				}
 			}
 		}
 

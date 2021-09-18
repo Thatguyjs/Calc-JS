@@ -31,7 +31,7 @@ class Lexer {
 		if((char >= '0' && char <= '9') || char === '.')
 			return Token.Number;
 
-		if(['+', '-', '*', '/', '%', '^', 'E'].includes(char))
+		if(['+', '-', '*', '/', '%', '^', 'E', '!'].includes(char))
 			return Token.Operator;
 
 		if(char === '(' || char === ')')
@@ -53,7 +53,8 @@ class Lexer {
 			else return { negative: false };
 		}
 		else if(type === Token.Operator) {
-			return { op_type: 'infix' }; // TODO: Support other operator types
+			if(data === '!') return { op_type: 'postfix' };
+			else return { op_type: 'infix' };
 		}
 	}
 
