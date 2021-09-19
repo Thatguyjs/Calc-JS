@@ -16,7 +16,7 @@ class Lexer {
 
 	// Check if a '-' should be interpreted as a negative instead of a minus
 	static is_negative(last_tk) {
-		return !last_tk || last_tk === '(' ||
+		return !last_tk || last_tk.data === '(' ||
 			(last_tk.type === Token.Operator && last_tk.modifier.op_type === 'infix');
 	}
 
@@ -73,7 +73,7 @@ class Lexer {
 		let ch = this.source[this.index];
 		if(!ch) return null;
 
-		let type = Lexer.char_type(ch);
+		let type = Lexer.char_type(ch, last_tk);
 
 		// Skip whitespace
 		while(type === Token.None) {
@@ -117,7 +117,7 @@ class Lexer {
 		while(tk !== null) {
 			tokens.push(tk);
 			const last_tk = tk;
-			tk = this.next(tk);
+			tk = this.next(last_tk);
 
 			const error = this.token_error(last_tk, tk);
 			if(error.has_error()) return { tokens: [], error };

@@ -7,8 +7,11 @@ let test_results = { total: 0, passed: 0, failed: [] };
 function test(string, expected) {
 	test_results.total++;
 
-	const result = Calculator.eval(string, addons.constants, addons.functions);
+	let result = null;
 	let res_string = "";
+
+	try { result = Calculator.eval(string, addons.constants, addons.functions); }
+	catch { console.log("ERROR on test " + test_results.total + ": " + string); }
 
 	for(let r in result) {
 		res_string += (result[r].error.has_error() ? result[r].error.message : result[r].value.toString()) + ', ';
@@ -63,21 +66,21 @@ test("3 - 2, 2, 5 / 2 + 0.5", "1, 2, 3");
 test("pi", "3.1415926536");
 test("e", "2.7182818285");
 test("pi * 2.5", "7.853981634");
-// test("sqrt(36)", "6");
+test("sqrt(36)", "6");
 // test("sum(2, 5, 9, 16)", "32");
 // test("sum()", "0");
-// test("round(0.49)", "0");
-// test("round(0.5)", "1");
-// test("floor(4.99)", "4");
-// test("ceil(2.01)", "3");
+test("round(0.49)", "0");
+test("round(0.5)", "1");
+test("floor(4.99)", "4");
+test("ceil(2.01)", "3");
 
 test("2(3)", "6");
 test("(7)2", "14");
 test("3(2+3)", "15");
 test("2.5pi", "7.853981634");
 // test("a = 3, 6a", "18");
-// test("2sqrt(169)", "26");
-// test("sqrt(169)3", "39");
+test("2sqrt(169)", "26");
+test("sqrt(169)3", "39");
 test("(2)3!", "12");
 // test("a = 11, b = 3, (a)b + 1", "34");
 

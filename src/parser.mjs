@@ -110,11 +110,21 @@ class Parser {
 				num_stack.unshift(token);
 			}
 			else if(token.type === Token.Name) {
-				if(token.data in this.constants)
-					num_stack.unshift(new Token(Token.Number, this.constants[token.data]));
-				else {
-					error = new Err(Err.UnknownVariable);
-					break;
+				if(token.modifier.type === 'constant') {
+					if(token.data in this.constants)
+						num_stack.unshift(new Token(Token.Number, this.constants[token.data]));
+					else {
+						error = new Err(Err.UnknownVariable);
+						break;
+					}
+				}
+				else if(token.modifier.type === 'function') {
+					if(token.data in this.functions)
+						num_stack.unshift(new Token(Token.Number, this.functions[token.data](num_stack.shift())));
+					else {
+						error = new Err(Err.UnknownFunction);
+						break;
+					}
 				}
 			}
 			else {

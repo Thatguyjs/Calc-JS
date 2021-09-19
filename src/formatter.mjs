@@ -45,6 +45,8 @@ class Formatter {
 		let stack = [new Token(Token.Paren, '(')];
 		tokens.push(new Token(Token.Paren, ')'));
 
+		let fn_stack = [];
+
 		let depth = 0;
 
 		while(tokens.length) {
@@ -66,6 +68,9 @@ class Formatter {
 
 					stack.shift();
 					depth--;
+
+					if(fn_stack.length && fn_stack[0].modifier.depth === depth)
+						result.push(fn_stack.shift());
 				}
 			}
 			else if(token.type === Token.Operator) {
@@ -73,6 +78,14 @@ class Formatter {
 					result.push(stack.shift());
 				}
 				stack.unshift(token);
+			}
+			else if(token.type === Token.Name && tokens[0] && tokens[0].data === '(') {
+				token.modifier.type = 'function';
+				fn_stack.unshift(token);
+			}
+			else if(token.type === Token.Name) {
+				token.modifier.type = 'constant';
+				result.push(token);
 			}
 			else result.push(token);
 		}
