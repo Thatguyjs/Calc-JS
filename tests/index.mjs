@@ -1,28 +1,23 @@
+import { expect_eq, finish } from "./lib.mjs";
+
 import addons from "./addons.mjs";
 import Calculator from "../src/include.mjs";
 
 
 let test_results = { total: 0, passed: 0, failed: [] };
 
-function test(string, expected) {
-	test_results.total++;
+function calculate(input) {
+	let result = Calculator.eval(input, addons.constants, addons.functions);
+	let res_list = [];
 
-	let result = null;
-	let res_string = "";
+	for(let r in result)
+		res_list.push(result[r].error.has_error() ? result[r].error.message : result[r].value.toString());
 
-	try { result = Calculator.eval(string, addons.constants, addons.functions); }
-	catch(e) { console.log("ERROR on test " + test_results.total + ": " + string + '\n' + e); }
+	return res_list.join(', ');
+}
 
-	for(let r in result) {
-		res_string += (result[r].error.has_error() ? result[r].error.message : result[r].value.toString()) + ', ';
-	}
-
-	res_string = res_string.slice(0, -2);
-
-	if(res_string !== expected)
-		test_results.failed.push({ string, actual: res_string, expected, index: test_results.total - 1 });
-	else
-		test_results.passed++;
+function test(input, expected) {
+	return expect_eq(expected, calculate(input), null, input);
 }
 
 
@@ -84,10 +79,4 @@ test("sqrt(169)3", "39");
 test("(2)3!", "12");
 test("a = 11, b = 3, (a)b + 1", "34");
 
-
-console.log(`Passed ${test_results.passed} of ${test_results.total} tests.`);
-
-for(let f in test_results.failed) {
-	const test = test_results.failed[f];
-	console.log(`Failed test ${test.index}: "${test.string}": Expected '${test.expected}', got '${test.actual}'`);
-}
+finish();

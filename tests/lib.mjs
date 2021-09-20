@@ -1,59 +1,64 @@
-// Small testing library
+// A minimal testing library
 
-class Tester {
-
-	static CORRECT = 0;
-	static INCORRECT = 1;
-	static END = 2;
-
-	output = { ALL: 0, ERROR: 1, NONE: 2 };
-	output_level = Tester.output.ALL;
-
-	tests = [];
-	index = 0;
-	result = { total: null, correct: 0, incorrect: 0 };
+let results = [];
 
 
-	constructor(output_level) {
-		if(typeof output_level === 'number') {
-			this.output_level = output_level;
-		}
-	}
-
-
-	load(tests) {
-		if(!Array.isArray(tests)) tests = [tests];
-		this.tests.push(...tests);
-	}
-
-	unload() {
-		this.tests = [];
-	}
-
-
-	#prep_run() {
-		if(this.index === 0) {
-			this.result.total = this.tests.length;
-		}
-	}
-
-	#test(ind) {
-		if()
-	}
-
-	next() {
-		this.#prep_run();
-		return this.#test(this.index++);
-	}
-
-	all() {
-		this.#prep_run();
-	}
-
-
-	reset() {
-		this.index = 0;
-		this.result = { total: null, correct: 0, incorrect: 0 };
-	}
-
+function fail(func_name, expected, actual, info) {
+	results.push({
+		success: false,
+		func: func_name,
+		expected,
+		actual,
+		info
+	});
 }
+
+function succeed(func_name, expected, actual, info) {
+	results.push({
+		success: true,
+		func: func_name,
+		expected,
+		actual,
+		info
+	});
+}
+
+
+function expect_eq(expected, actual, compare_func=null, test_info) {
+	try {
+		if(compare_func !== null) {
+			if(!compare_func(expected, actual)) fail('expect_eq', expected, actual, test_info);
+			else succeed('expect_eq', expected, actual);
+		}
+		else {
+			if(expected !== actual) fail('expect_eq', expected, actual, test_info);
+			else succeed('expect_eq', expected, actual);
+		}
+	}
+	catch(err) {
+		fail('expect_eq', expected, err);
+	}
+}
+
+
+function finish() {
+	let failed = [];
+
+	for(let r in results) {
+		if(!results[r].success) failed.push(results[r]);
+	}
+
+	console.log(`${results.length - failed.length} of ${results.length} tests passed.`);
+
+	for(let f in failed) {
+		console.log(`Failed test "${failed[f].info || failed[f].func}": expected "${failed[f].expected}", got "${failed[f].actual}"`);
+	}
+}
+
+
+export {
+	fail,
+	succeed,
+	expect_eq,
+	finish
+};
