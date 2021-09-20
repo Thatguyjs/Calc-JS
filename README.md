@@ -10,9 +10,9 @@ after a little more work is done
 - [x] Parentheses
 - [x] Operator precedence (aka 'order of operations')
 - [x] Constants
-- [ ] Functions
-  - [ ] Parameters
-  - [ ] Parameter lists
-- [ ] Variables
+- [x] Functions
+  - [x] Parameters
+  - [x] Parameter lists
+- [x] Variables
 - [x] Multiple expressions
 - [ ] Pass all tests for my [Calculator](https://github.com/Thatguyjs/Calculator-Ext)
