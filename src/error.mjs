@@ -4,7 +4,8 @@ const messages = [
 	'Missing Operation',
 	'Invalid Expression',
 	'Unknown Variable',
-	'Unknown Function'
+	'Unknown Function',
+	'Unknown Token'
 ];
 
 
@@ -15,6 +16,7 @@ class Err {
 	static InvalidExpression = 3;
 	static UnknownVariable = 4;
 	static UnknownFunction = 5;
+	static UnknownToken = 6;
 
 	code = null;
 	message = "";

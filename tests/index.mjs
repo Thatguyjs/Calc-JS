@@ -11,7 +11,7 @@ function test(string, expected) {
 	let res_string = "";
 
 	try { result = Calculator.eval(string, addons.constants, addons.functions); }
-	catch { console.log("ERROR on test " + test_results.total + ": " + string); }
+	catch(e) { console.log("ERROR on test " + test_results.total + ": " + string + '\n' + e); }
 
 	for(let r in result) {
 		res_string += (result[r].error.has_error() ? result[r].error.message : result[r].value.toString()) + ', ';
@@ -53,7 +53,7 @@ test("8 / 2", "4");
 test("5 % 3", "2");
 test("2 ^ 6", "64");
 test("10E2", "1000");
-test("30E-1", "3");
+test("300E-2", "3");
 test("30E-1 - 7", "-4");
 test("6!", "720");
 test("0.1 + 0.2", "0.3");
@@ -67,8 +67,8 @@ test("pi", "3.1415926536");
 test("e", "2.7182818285");
 test("pi * 2.5", "7.853981634");
 test("sqrt(36)", "6");
-// test("sum(2, 5, 9, 16)", "32");
-// test("sum()", "0");
+test("sum(2, 5, 9, 16)", "32");
+test("sum()", "0");
 test("round(0.49)", "0");
 test("round(0.5)", "1");
 test("floor(4.99)", "4");

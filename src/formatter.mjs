@@ -82,6 +82,7 @@ class Formatter {
 			else if(token.type === Token.Name && tokens[0] && tokens[0].data === '(') {
 				token.modifier.type = 'function';
 				fn_stack.unshift(token);
+				result.push(tokens[0]); // Mark the start of function parameters
 			}
 			else if(token.type === Token.Name) {
 				token.modifier.type = 'constant';
@@ -97,8 +98,15 @@ class Formatter {
 		let groups = [];
 		let current = [];
 
+		let depth = 0;
+
 		for(let t in this.tokens) {
-			if(this.tokens[t].type !== Token.Comma)
+			if(this.tokens[t].type === Token.Paren) {
+				if(this.tokens[t].data === '(') depth++;
+				else depth--;
+			}
+
+			if(this.tokens[t].type !== Token.Comma || depth > 0)
 				current.push(this.tokens[t]);
 			else {
 				groups.push(current);

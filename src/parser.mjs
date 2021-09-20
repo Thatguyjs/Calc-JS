@@ -119,15 +119,24 @@ class Parser {
 					}
 				}
 				else if(token.modifier.type === 'function') {
-					if(token.data in this.functions)
-						num_stack.unshift(new Token(Token.Number, this.functions[token.data](num_stack.shift())));
+					if(token.data in this.functions) {
+						let params = [];
+
+						while(num_stack.length && num_stack[0].type !== Token.Paren)
+							params.push(num_stack.shift());
+
+						// TODO: Return an error here if `num_stack.length === 0`
+
+						num_stack.shift();
+						num_stack.unshift(new Token(Token.Number, this.functions[token.data](...params)));
+					}
 					else {
 						error = new Err(Err.UnknownFunction);
 						break;
 					}
 				}
 			}
-			else {
+			else if(token.type === Token.Operator) {
 				if(token.modifier.op_type === 'infix') {
 					let t1 = num_stack.shift();
 					let t2 = num_stack.shift();
@@ -146,6 +155,17 @@ class Parser {
 
 					num_stack.unshift(res.token);
 				}
+			}
+
+			// Function parameters
+			else if(token.type === Token.Paren) {
+				num_stack.unshift(token);
+			}
+			else if(token.type === Token.Comma) continue;
+
+			// A weird token appeared
+			else {
+				return { value: 0, error: new Err(Err.UnknownToken) };
 			}
 		}
 
