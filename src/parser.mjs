@@ -1,5 +1,6 @@
 import Err from "./error.mjs";
 import Token from "./token.mjs";
+import Formatter from "./formatter.mjs";
 
 
 // Round a number to an arbitrary precision
@@ -18,9 +19,6 @@ function round(number, precision) {
 
 
 class Parser {
-	static Expression = 0;
-	static Definition = 1;
-
 	exprs = [];
 	constants = {};
 	variables = {};
@@ -30,6 +28,18 @@ class Parser {
 		this.exprs = exprs;
 		this.constants = constants;
 		this.functions = functions;
+
+		// Make sure variable definitions are first
+		let defs = [];
+		let ind = 0;
+
+		while(ind < this.exprs.length) {
+			if(this.exprs[ind].type === Formatter.Definition)
+				defs.push(this.exprs.splice(ind, 1)[0]);
+			else ind++;
+		}
+
+		this.exprs = defs.concat(this.exprs);
 	}
 
 	add_constant(name, value, override=false) {
@@ -103,28 +113,28 @@ class Parser {
 	// Parse the next expression
 	next() {
 		if(!this.exprs[0]) return null;
+		if(this.exprs[0].error.has_error())
+			return { value: 0, error: this.exprs.shift().error };
+
+		const expr = this.exprs.shift();
+
+		let var_name = "";
+		if(expr.type === Formatter.Definition) {
+			var_name = expr.tokens[0].data;
+			expr.tokens = expr.tokens.slice(2);
+		}
 
 		let error = Err.none();
-		let is_definition = false;
-		let var_name = ""; // Only used if `is_definition` is true
 		let num_stack = [];
 
-		while(this.exprs[0].length) {
-			const token = this.exprs[0].shift();
+		while(expr.tokens.length) {
+			const token = expr.tokens.shift();
 
 			if(token.type === Token.Number) {
 				num_stack.unshift(token);
 			}
 			else if(token.type === Token.Name) {
 				if(token.modifier.type === 'constant') {
-					if(this.exprs[0].length && this.exprs[0][0].type === Token.Equals) {
-						is_definition = true;
-						var_name = token.data;
-
-						this.exprs[0].shift(); // Skip the '=' token
-						continue;
-					}
-
 					if(token.data in this.constants)
 						num_stack.unshift(new Token(Token.Number, this.constants[token.data]));
 					else if(token.data in this.variables)
@@ -185,16 +195,19 @@ class Parser {
 			}
 		}
 
+		if(error.has_error())
+			return { value: 0, error };
+
+		if(!num_stack.length && expr.type !== Formatter.Definition)
+			return { type: Parser.Expression, value: 0, error: new Err(Err.InvalidExpression) };
+
 		if(!error.has_error() && num_stack[0].modifier.negative)
 			num_stack[0].data = -num_stack[0].data;
 
-		this.exprs.shift();
-
-		if(error.has_error()) return { value: 0, error };
-		else {
-			if(is_definition) return { type: Parser.Definition, variable: var_name, value: round(num_stack[0].data, 10) };
-			else return { type: Parser.Expression, value: round(num_stack[0].data, 10), error };
-		}
+		if(expr.type === Formatter.Definition)
+			return { type: expr.type, variable: var_name, value: round(num_stack[0].data, 10), error: Err.none() };
+		else
+			return { type: expr.type, value: round(num_stack[0].data, 10), error };
 	}
 
 	// Parse all expressions
@@ -203,7 +216,7 @@ class Parser {
 		let result = this.next();
 
 		while(result) {
-			if(result.type === Parser.Definition)
+			if(result.type === Formatter.Definition)
 				this.variables[result.variable] = result.value;
 			else
 				results.push(result);

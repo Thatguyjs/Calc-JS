@@ -1,5 +1,6 @@
 // Group tokens and correctly order them
 
+import Err from "./error.mjs";
 import Token from "./token.mjs";
 
 
@@ -11,6 +12,9 @@ class Formatter {
 		'^': 3,
 		'E': 4, '!': 4
 	};
+
+	static Expression = 1;
+	static Definition = 2;
 
 	tokens = [];
 
@@ -95,12 +99,15 @@ class Formatter {
 			else result.push(token);
 		}
 
-		return result;
+		if(depth !== -1 || stack.length)
+			return { tokens: [], error: new Err(Err.InvalidExpression) };
+
+		return { tokens: result, error: Err.none() };
 	}
 
 	group() {
 		let groups = [];
-		let current = [];
+		let current = { type: null, tokens: [], error: Err.none() };
 
 		let depth = 0;
 
@@ -111,15 +118,22 @@ class Formatter {
 			}
 
 			if(this.tokens[t].type !== Token.Comma || depth > 0)
-				current.push(this.tokens[t]);
+				current.tokens.push(this.tokens[t]);
 			else {
 				groups.push(current);
-				current = [];
+				current = { type: null, tokens: [], error: Err.none() };
 			}
 		}
 
-		if(current.length)
+		if(current.tokens.length)
 			groups.push(current);
+
+		for(let g in groups) {
+			if(groups[g].tokens.length >= 2 && groups[g].tokens[0].type === Token.Name && groups[g].tokens[1].type === Token.Equals)
+				groups[g].type = Formatter.Definition;
+			else
+				groups[g].type = Formatter.Expression;
+		}
 
 		return groups;
 	}
@@ -128,8 +142,12 @@ class Formatter {
 	all() {
 		let groups = this.group();
 
-		for(let g in groups)
-			groups[g] = Formatter.order(groups[g]);
+		for(let g in groups) {
+			let ordered = Formatter.order(groups[g].tokens);
+
+			if(ordered.error.has_error()) groups[g].error = ordered.error;
+			else groups[g].tokens = ordered.tokens;
+		}
 
 		return groups;
 	}

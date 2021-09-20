@@ -21,6 +21,7 @@ function test(input, expected) {
 }
 
 
+// Basic number & order of operations tests
 test("1", "1");
 test("-1", "-1");
 test("110 + 50", "160");
@@ -37,7 +38,11 @@ test("-2^4", "-16");
 test("2^-4", "0.0625");
 test("(-2)^4", "16");
 
-// Other calculator tests
+// Constants
+test("pi * 2.5", "7.853981634");
+test("2.5pi", "7.853981634");
+
+// Tests from Calculator-Ext
 test("1", "1");
 test("-1", "-1");
 test("1 + 2", "3");
@@ -49,18 +54,37 @@ test("5 % 3", "2");
 test("2 ^ 6", "64");
 test("10E2", "1000");
 test("300E-2", "3");
-test("30E-1 - 7", "-4");
 test("6!", "720");
 test("0.1 + 0.2", "0.3");
 
+// Multiple expressions, no variables
 test("1 + 1, 2 + 3", "2, 5");
 test("7 - 21, 3 * 5", "-14, 15");
 test("5 / 2, 0.25 * 4 / 2", "2.5, 0.5");
 test("3 - 2, 2, 5 / 2 + 0.5", "1, 2, 3");
 
+// Implicit multiplication
+test("2(3)", "6");
+test("(7)2", "14");
+test("a = 3, 6a", "18");
+test("2sqrt(169)", "26");
+test("sqrt(169)3", "39");
+test("(2)3!", "12");
+test("a = 11, b = 3, (a)b + 1", "34");
+
+// Variables (single & multiple expressions)
+test("a = 5, a + 1", "6");
+test("a + 1, a = 5", "6");
+test("a = 6, b = 4, a + b", "10");
+test("a + b, a = 6, b = 4", "10");
+test("a = 6, a + b, b = 4", "10");
+test("a = 4 * 2, b = 16 / 4 + 4, a + b", "16");
+test("a = 31, b = a + 11, a, b", "31, 42");
+test("a, b, a = 31, b = a + 11", "31, 42");
+
+// Functions & constants
 test("pi", "3.1415926536");
 test("e", "2.7182818285");
-test("pi * 2.5", "7.853981634");
 test("sqrt(36)", "6");
 test("sum(2, 5, 9, 16)", "32");
 test("sum()", "0");
@@ -69,14 +93,11 @@ test("round(0.5)", "1");
 test("floor(4.99)", "4");
 test("ceil(2.01)", "3");
 
-test("2(3)", "6");
-test("(7)2", "14");
-test("3(2+3)", "15");
-test("2.5pi", "7.853981634");
-test("a = 3, 6a", "18");
-test("2sqrt(169)", "26");
-test("sqrt(169)3", "39");
-test("(2)3!", "12");
-test("a = 11, b = 3, (a)b + 1", "34");
+test("(-1)!", "Invalid Operation");
+test("()", "Invalid Expression");
+test("(", "Invalid Expression");
+test(")", "Invalid Expression");
+test("4 + a", "Unknown Variable");
+test("notafunc(123, 456)", "Unknown Function");
 
 finish();
