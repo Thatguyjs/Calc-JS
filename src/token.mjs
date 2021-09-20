@@ -6,6 +6,7 @@ class Token {
 	static Paren = 4;
 	static Name = 5;
 	static Comma = 6;
+	static Equals = 7;
 
 	type = Token.None;
 	data = "";

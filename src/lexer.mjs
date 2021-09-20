@@ -43,6 +43,9 @@ class Lexer {
 		if(char === ',')
 			return Token.Comma;
 
+		if(char === '=')
+			return Token.Equals;
+
 		return Token.Unknown;
 	}
 

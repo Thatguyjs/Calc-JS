@@ -5,9 +5,9 @@ import Token from "./token.mjs";
 // Round a number to an arbitrary precision
 function round(number, precision) {
 	if(typeof number !== 'number')
-		throw new TypeError(`round() expected a number, got a ${typeof number}`);
+		throw new TypeError(`round() expected a number, got ${typeof number}`);
 	if(typeof precision !== 'number')
-		throw new TypeError(`round() expected a precision, got a ${typeof precision}`);
+		throw new TypeError(`round() expected a precision, got ${typeof precision}`);
 
 	if(number.toString().includes('e')) return number;
 
@@ -18,8 +18,12 @@ function round(number, precision) {
 
 
 class Parser {
+	static Expression = 0;
+	static Definition = 1;
+
 	exprs = [];
 	constants = {};
+	variables = {};
 	functions = {};
 
 	constructor(exprs, constants={}, functions={}) {
@@ -101,6 +105,8 @@ class Parser {
 		if(!this.exprs[0]) return null;
 
 		let error = Err.none();
+		let is_definition = false;
+		let var_name = ""; // Only used if `is_definition` is true
 		let num_stack = [];
 
 		while(this.exprs[0].length) {
@@ -111,8 +117,18 @@ class Parser {
 			}
 			else if(token.type === Token.Name) {
 				if(token.modifier.type === 'constant') {
+					if(this.exprs[0].length && this.exprs[0][0].type === Token.Equals) {
+						is_definition = true;
+						var_name = token.data;
+
+						this.exprs[0].shift(); // Skip the '=' token
+						continue;
+					}
+
 					if(token.data in this.constants)
 						num_stack.unshift(new Token(Token.Number, this.constants[token.data]));
+					else if(token.data in this.variables)
+						num_stack.unshift(new Token(Token.Number, this.variables[token.data]));
 					else {
 						error = new Err(Err.UnknownVariable);
 						break;
@@ -175,7 +191,10 @@ class Parser {
 		this.exprs.shift();
 
 		if(error.has_error()) return { value: 0, error };
-		else return { value: round(num_stack[0].data, 10), error };
+		else {
+			if(is_definition) return { type: Parser.Definition, variable: var_name, value: round(num_stack[0].data, 10) };
+			else return { type: Parser.Expression, value: round(num_stack[0].data, 10), error };
+		}
 	}
 
 	// Parse all expressions
@@ -184,7 +203,11 @@ class Parser {
 		let result = this.next();
 
 		while(result) {
-			results.push(result);
+			if(result.type === Parser.Definition)
+				this.variables[result.variable] = result.value;
+			else
+				results.push(result);
+
 			result = this.next();
 		}
 

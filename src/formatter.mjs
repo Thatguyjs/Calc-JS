@@ -9,8 +9,7 @@ class Formatter {
 		'+': 1, '-': 1,
 		'*': 2, '/': 2, '%': 2,
 		'^': 3,
-		'E': 4,
-		'!': 4
+		'E': 4, '!': 4
 	};
 
 	tokens = [];
@@ -33,6 +32,9 @@ class Formatter {
 			token_list.unshift(new Token(Token.Operator, '*', { op_type: 'infix' }));
 
 		else if(token.data === ')' && first_tk.type === Token.Number)
+			token_list.unshift(new Token(Token.Operator, '*', { op_type: 'infix' }));
+
+		else if(token.data === ')' && first_tk.type === Token.Name)
 			token_list.unshift(new Token(Token.Operator, '*', { op_type: 'infix' }));
 
 		else if(token.type === Token.Number && first_tk.type === Token.Name)
@@ -79,14 +81,16 @@ class Formatter {
 				}
 				stack.unshift(token);
 			}
-			else if(token.type === Token.Name && tokens[0] && tokens[0].data === '(') {
-				token.modifier.type = 'function';
-				fn_stack.unshift(token);
-				result.push(tokens[0]); // Mark the start of function parameters
-			}
 			else if(token.type === Token.Name) {
-				token.modifier.type = 'constant';
-				result.push(token);
+				if(tokens[0] && tokens[0].data === '(') {
+					token.modifier.type = 'function';
+					fn_stack.unshift(token);
+					result.push(tokens[0]); // Mark the start of function parameters
+				}
+				else {
+					token.modifier.type = 'constant';
+					result.push(token);
+				}
 			}
 			else result.push(token);
 		}
