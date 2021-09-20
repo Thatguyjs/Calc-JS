@@ -15,4 +15,4 @@ after a little more work is done
   - [x] Parameter lists
 - [x] Variables
 - [x] Multiple expressions
-- [ ] Pass all tests for my [Calculator](https://github.com/Thatguyjs/Calculator-Ext)
+- [x] Pass all tests for my [Calculator](https://github.com/Thatguyjs/Calculator-Ext)
