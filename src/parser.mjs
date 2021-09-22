@@ -60,6 +60,9 @@ class Parser {
 	static operate(op, t1, t2) {
 		let value = NaN;
 
+		if(op === undefined || t1 === undefined || t2 === undefined)
+			return { token: null, error: new Err(Err.InvalidOperation) };
+
 		if(t1.modifier.negative && t1.modifier.depth > op.modifier.depth) {
 			t1.data = -t1.data;
 			t1.modifier.negative = false;
