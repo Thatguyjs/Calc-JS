@@ -48,6 +48,12 @@ test("(-2)^4", "16");
 test("pi * 2.5", "7.853981634");
 test("2.5pi", "7.853981634");
 
+// Variables
+test("x = 4, x", "4");
+test("x, x = 4", "4");
+test("x = -2, x", "-2");
+test("x, x = -2", "-2");
+
 // Tests from Calculator-Ext
 test("1", "1");
 test("-1", "-1");

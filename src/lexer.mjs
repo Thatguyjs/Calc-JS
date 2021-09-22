@@ -16,7 +16,7 @@ class Lexer {
 
 	// Check if a '-' should be interpreted as a negative instead of a minus
 	static is_negative(last_tk) {
-		return !last_tk || last_tk.data === '(' ||
+		return !last_tk || last_tk.data === '(' || last_tk.data === ',' || last_tk.data === '=' ||
 			(last_tk.type === Token.Operator && last_tk.modifier.op_type === 'infix');
 	}
 
