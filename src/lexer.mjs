@@ -64,9 +64,11 @@ class Lexer {
 
 	// Check for errors with token sequences
 	token_error(last_tk, tk) {
-		// TODO: Fix this for empty function calls
-		// if(last_tk.data === '(' && tk.data === ')')
-		// 	return new Err(Err.InvalidExpression);
+		if(last_tk.type === Token.Comma && tk.type === Token.Comma)
+			return new Err(Err.InvalidExpression);
+
+		if(last_tk.type === Token.Equals && tk.type === Token.Equals)
+			return new Err(Err.InvalidExpression);
 
 		return Err.none();
 	}

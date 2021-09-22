@@ -18,7 +18,9 @@ function calculate(input) {
 
 function test(input, expected) {
 	let res = expect_eq(expected, calculate(input), null, input);
-	if(res) res = expect_eq(expected, calculate(input.replaceAll(/\s+/g, '')), null, input);
+
+	const stripped_input = input.replaceAll(/\s+/g, '');
+	if(res && stripped_input !== input) res = expect_eq(expected, calculate(stripped_input), null, stripped_input);
 
 	return res;
 }
@@ -98,9 +100,11 @@ test("floor(4.99)", "4");
 test("ceil(2.01)", "3");
 
 test("(-1)!", "Invalid Operation");
-test("()", "Invalid Expression");
+test("( )", "Invalid Expression");
 test("(", "Invalid Expression");
 test(")", "Invalid Expression");
+test("1, ,2", "Invalid Expression");
+test("a==1", "Invalid Expression");
 test("4 + a", "Unknown Variable");
 test("notafunc(123, 456)", "Unknown Function");
 
