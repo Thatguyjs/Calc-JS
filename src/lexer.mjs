@@ -21,11 +21,11 @@ class Lexer {
 	}
 
 	// Get the Token type of a character
-	static char_type(char, last_tk) {
+	static char_type(char, last_tk, continuation=false) {
 		if(/\s/.test(char))
 			return Token.None;
 
-		if(char === '-' && Lexer.is_negative(last_tk))
+		if(char === '-' && !continuation && Lexer.is_negative(last_tk))
 			return Token.Number;
 
 		if((char >= '0' && char <= '9') || char === '.')
@@ -100,7 +100,7 @@ class Lexer {
 
 			ch = this.source[++this.index];
 			if(!ch) break;
-			next_type = Lexer.char_type(ch, last_tk);
+			next_type = Lexer.char_type(ch, last_tk, true);
 		}
 
 		const mod = Lexer.token_mod(chars, type);

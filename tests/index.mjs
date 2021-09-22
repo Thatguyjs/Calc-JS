@@ -17,7 +17,10 @@ function calculate(input) {
 }
 
 function test(input, expected) {
-	return expect_eq(expected, calculate(input), null, input);
+	let res = expect_eq(expected, calculate(input), null, input);
+	if(res) res = expect_eq(expected, calculate(input.replaceAll(/\s+/g, '')), null, input);
+
+	return res;
 }
 
 
@@ -25,6 +28,7 @@ function test(input, expected) {
 test("1", "1");
 test("-1", "-1");
 test("110 + 50", "160");
+test("50 - 110", "-60");
 test("1 + 2 * 3", "7");
 test("110 + 50 + (4 - 2 * 5) - 10 + 40", "184");
 test("(110 + 50) * (2 - 4)", "-320");
