@@ -104,6 +104,7 @@ test("round(0.49)", "0");
 test("round(0.5)", "1");
 test("floor(4.99)", "4");
 test("ceil(2.01)", "3");
+test("sum(2 + 3 / 2, 4 * 5)", "23.5");
 
 test("(-1)!", "Invalid Operation");
 test("( )", "Invalid Expression");
@@ -113,5 +114,7 @@ test("1, ,2", "Invalid Expression");
 test("a==1", "Invalid Expression");
 test("4 + a", "Unknown Variable");
 test("notafunc(123, 456)", "Unknown Function");
+
+// test("macrotest(123, 456)", "");
 
 finish();

@@ -17,13 +17,19 @@ class Formatter {
 	static Definition = 2;
 
 	tokens = [];
+	macros = { macrotest: null };
 
-	constructor(tokens) {
+	constructor(tokens, macros={}) {
 		this.tokens = tokens;
+		// this.macros = macros;
 	}
 
 	static get_precedence(token) {
 		return Formatter.precedence[token.data];
+	}
+
+	static has_precedence(token) {
+		return token.data in Formatter.precedence;
 	}
 
 	// Insert tokens if they were implicitly used
@@ -46,7 +52,7 @@ class Formatter {
 	}
 
 	// Correctly order tokens converting from infix to prefix
-	static order(tokens) {
+	order(tokens) {
 		let result = [];
 		let stack = [new Token(Token.Paren, '(')];
 		tokens.push(new Token(Token.Paren, ')'));
@@ -75,8 +81,31 @@ class Formatter {
 					stack.shift();
 					depth--;
 
-					if(fn_stack.length && fn_stack[0].modifier.depth === depth)
-						result.push(fn_stack.shift());
+					if(fn_stack.length && fn_stack[0].modifier.depth === depth) {
+						if(fn_stack[0].data in this.macros) {
+							let params = [];
+							let param = [];
+
+							let ind = result.length - 1;
+
+							while(result[ind].data !== '(') {
+								if(result[ind].type === Token.Comma) {
+									params.unshift(param);
+									param = [];
+									result.pop();
+									ind--;
+								}
+								else param.unshift(result.pop());
+
+								ind--;
+							}
+
+							if(param.length) params.unshift(param);
+
+							console.log("Params:", params);
+						}
+						else result.push(fn_stack.shift());
+					}
 				}
 			}
 			else if(token.type === Token.Operator) {
@@ -95,6 +124,13 @@ class Formatter {
 					token.modifier.type = 'constant';
 					result.push(token);
 				}
+			}
+			else if(token.type === Token.Comma) {
+				while(stack.length && stack[0].type === Token.Operator) {
+					result.push(stack.shift());
+				}
+
+				result.push(token);
 			}
 			else result.push(token);
 		}
@@ -143,7 +179,7 @@ class Formatter {
 		let groups = this.group();
 
 		for(let g in groups) {
-			let ordered = Formatter.order(groups[g].tokens);
+			let ordered = this.order(groups[g].tokens);
 
 			if(ordered.error.has_error()) groups[g].error = ordered.error;
 			else groups[g].tokens = ordered.tokens;
