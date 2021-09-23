@@ -1,5 +1,7 @@
 // Constants and functions for the calculator
 
+import { Token } from "../src/include.mjs";
+
 
 // Allow functions to take token input
 function tk_wrap(call) {
@@ -9,7 +11,7 @@ function tk_wrap(call) {
 		for(let t in tokens)
 			nums.push(tokens[t].data);
 
-		return call(...nums);
+		return [new Token(Token.Number, call(...nums))];
 	}
 }
 
@@ -40,5 +42,11 @@ export default {
 
 			return total;
 		})
+	},
+
+	macros: {
+		mult: (n1, n2) => {
+			return [n1, new Token(Token.Operator, '*'), n2];
+		}
 	}
 };

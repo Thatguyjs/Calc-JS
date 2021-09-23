@@ -152,12 +152,12 @@ class Parser {
 						let params = [];
 
 						while(num_stack.length && num_stack[0].type !== Token.Paren)
-							params.push(num_stack.shift());
+							params.unshift(num_stack.shift());
 
 						// TODO: Return an error here if `num_stack.length === 0`
 
 						num_stack.shift();
-						num_stack.unshift(new Token(Token.Number, this.functions[token.data](...params)));
+						num_stack.unshift(...this.functions[token.data](...params));
 					}
 					else {
 						error = new Err(Err.UnknownFunction);
