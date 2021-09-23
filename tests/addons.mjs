@@ -45,8 +45,8 @@ export default {
 	},
 
 	macros: {
-		mult: (n1, n2) => {
-			return [n1, new Token(Token.Operator, '*'), n2];
+		def: (name, value) => {
+			return [name[0], new Token(Token.Equals, '='), ...value];
 		}
 	}
 };

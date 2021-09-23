@@ -1,7 +1,7 @@
 {
 	"name": "Calc-js",
 	"description": "A Math Parser for JavaScript",
-	"version": "1.0.1",
+	"version": "1.1.1",
 	"scripts": {
 		"test": "node tests/index.mjs"
 	}

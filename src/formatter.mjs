@@ -17,11 +17,11 @@ class Formatter {
 	static Definition = 2;
 
 	tokens = [];
-	macros = { macrotest: null };
+	macros = {};
 
 	constructor(tokens, macros={}) {
 		this.tokens = tokens;
-		// this.macros = macros;
+		this.macros = macros;
 	}
 
 	static get_precedence(token) {
@@ -49,6 +49,14 @@ class Formatter {
 
 		else if(token.type === Token.Number && first_tk.type === Token.Name)
 			token_list.unshift(new Token(Token.Operator, '*', { op_type: 'infix' }));
+	}
+
+	// Get the group type (Definition or Expression)
+	static get_group_type(group) {
+		if(group.tokens.length >= 2 && group.tokens[0].type === Token.Name && group.tokens[1].type === Token.Equals)
+			return Formatter.Definition;
+		else
+			return Formatter.Expression;
 	}
 
 	// Correctly order tokens converting from infix to prefix
@@ -81,31 +89,8 @@ class Formatter {
 					stack.shift();
 					depth--;
 
-					if(fn_stack.length && fn_stack[0].modifier.depth === depth) {
-						if(fn_stack[0].data in this.macros) {
-							let params = [];
-							let param = [];
-
-							let ind = result.length - 1;
-
-							while(result[ind].data !== '(') {
-								if(result[ind].type === Token.Comma) {
-									params.unshift(param);
-									param = [];
-									result.pop();
-									ind--;
-								}
-								else param.unshift(result.pop());
-
-								ind--;
-							}
-
-							if(param.length) params.unshift(param);
-
-							console.log("Params:", params);
-						}
-						else result.push(fn_stack.shift());
-					}
+					if(fn_stack.length && fn_stack[0].modifier.depth === depth)
+						result.push(fn_stack.shift());
 				}
 			}
 			else if(token.type === Token.Operator) {
@@ -115,7 +100,32 @@ class Formatter {
 				stack.unshift(token);
 			}
 			else if(token.type === Token.Name) {
-				if(tokens[0] && tokens[0].data === '(') {
+				if(token.data in this.macros) {
+					tokens.shift(); // TODO: Error if the next token is not a '('
+
+					let params = []; // List of token paramters
+					let param = []; // Current token list parameter
+					let depth = 0;
+
+					while(tokens[0] && (tokens[0].data !== ')' || depth > 0)) {
+						if(tokens[0].data === '(') depth++;
+						else if(tokens[0].data === ')') depth--;
+
+						else if(tokens[0].type === Token.Comma) {
+							params.push(param);
+							param = [];
+							tokens.shift();
+						}
+						else param.push(tokens.shift());
+					}
+
+					tokens.shift();
+					if(param.length) params.push(param);
+
+					// TODO: Check the return type so macros can return Err instances
+					tokens.unshift(...this.macros[token.data](...params));
+				}
+				else if(tokens[0] && tokens[0].data === '(') {
 					token.modifier.type = 'function';
 					fn_stack.unshift(token);
 					result.push(tokens[0]); // Mark the start of function parameters
@@ -164,13 +174,6 @@ class Formatter {
 		if(current.tokens.length)
 			groups.push(current);
 
-		for(let g in groups) {
-			if(groups[g].tokens.length >= 2 && groups[g].tokens[0].type === Token.Name && groups[g].tokens[1].type === Token.Equals)
-				groups[g].type = Formatter.Definition;
-			else
-				groups[g].type = Formatter.Expression;
-		}
-
 		return groups;
 	}
 
@@ -183,6 +186,8 @@ class Formatter {
 
 			if(ordered.error.has_error()) groups[g].error = ordered.error;
 			else groups[g].tokens = ordered.tokens;
+
+			groups[g].type = Formatter.get_group_type(groups[g]);
 		}
 
 		return groups;

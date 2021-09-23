@@ -7,7 +7,7 @@ import Calculator from "../src/include.mjs";
 let test_results = { total: 0, passed: 0, failed: [] };
 
 function calculate(input) {
-	let result = Calculator.eval(input, addons.constants, addons.functions);
+	let result = Calculator.eval(input, addons.constants, addons.functions, addons.macros);
 	let res_list = [];
 
 	for(let r in result)
@@ -115,6 +115,6 @@ test("a==1", "Invalid Expression");
 test("4 + a", "Unknown Variable");
 test("notafunc(123, 456)", "Unknown Function");
 
-// test("macrotest(123, 456)", "");
+test("def(n, 4), n", "4");
 
 finish();
