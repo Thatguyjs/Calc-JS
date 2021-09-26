@@ -31,7 +31,7 @@ class Lexer {
 		if((char >= '0' && char <= '9') || char === '.')
 			return Token.Number;
 
-		if(['+', '-', '*', '/', '%', '^', 'E', '!'].includes(char))
+		if(['&', '|', '>', '<', '+', '-', '*', '/', '%', '^', 'E', '!'].includes(char))
 			return Token.Operator;
 
 		if(char === '(' || char === ')')

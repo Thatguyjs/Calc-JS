@@ -7,10 +7,13 @@ import Token from "./token.mjs";
 class Formatter {
 	static precedence = {
 		'(': 0,
-		'+': 1, '-': 1,
-		'*': 2, '/': 2, '%': 2,
-		'^': 3,
-		'E': 4, '!': 4
+		'&': 1,
+		'|': 2,
+		'>': 3, '<': 3,
+		'+': 4, '-': 4,
+		'*': 5, '/': 5, '%': 5,
+		'^': 6,
+		'E': 7, '!': 7
 	};
 
 	static Expression = 1;

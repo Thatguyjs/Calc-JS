@@ -67,8 +67,29 @@ class Parser {
 			t1.data = -t1.data;
 			t1.modifier.negative = false;
 		}
+		else if(t1.modifier.negative && Formatter.get_precedence(op) <= Formatter.precedence['*']) {
+			t1.data = -t1.data;
+			t1.modifier.negative = false;
+		}
+
+		if(t2.modifier.negative) {
+			t2.data = -t2.data;
+			t2.modifier.negative = false;
+		}
 
 		switch(op.data) {
+			case '&':
+				value = t1.data & t2.data;
+				break;
+			case '|':
+				value = t1.data | t2.data;
+				break;
+			case '>':
+				value = t1.data > t2.data ? 1 : 0;
+				break;
+			case '<':
+				value = t1.data < t2.data ? 1 : 0;
+				break;
 			case '+':
 				value = round(t1.data + t2.data, 10);
 				break;
@@ -85,17 +106,9 @@ class Parser {
 				value = round(t1.data % t2.data, 10);
 				break;
 			case '^':
-				if(t2.modifier.negative) {
-					t2.data = -t2.data;
-					t2.modifier.negative = false;
-				}
 				value = round(t1.data ** t2.data, 10);
 				break;
 			case 'E':
-				if(t2.modifier.negative) {
-					t2.data = -t2.data;
-					t2.modifier.negative = false;
-				}
 				value = round(t1.data * (10 ** t2.data), 10);
 				break;
 			case '!':
@@ -107,7 +120,7 @@ class Parser {
 				break;
 		}
 
-		if(t1.modifier.negative || t2.modifier.negative)
+		if(t1.modifier.negative)
 			value = -value;
 
 		return { token: new Token(Token.Number, value, { negative: false }), error: Err.none() };
