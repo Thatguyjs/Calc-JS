@@ -7,7 +7,7 @@ import Calculator from "../src/include.mjs";
 let test_results = { total: 0, passed: 0, failed: [] };
 
 function calculate(input) {
-	let result = Calculator.eval(input, addons.constants, addons.functions, addons.macros);
+	let result = Calculator.eval(input, addons);
 	let res_list = [];
 
 	for(let r in result)
