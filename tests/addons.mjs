@@ -46,6 +46,11 @@ export default {
 
 	macros: {
 		def: (name, value) => {
+			if(name.length > 1 && name[1].data === 'as') {
+				value = name.slice(2);
+				name = [name[0]];
+			}
+
 			return [name[0], new Token(Token.Equals, '='), ...value];
 		}
 	}

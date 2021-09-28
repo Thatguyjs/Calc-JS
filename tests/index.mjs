@@ -16,11 +16,13 @@ function calculate(input) {
 	return res_list.join(', ');
 }
 
-function test(input, expected) {
+function test(input, expected, without_space=true) {
 	let res = expect_eq(expected, calculate(input), null, input);
 
-	const stripped_input = input.replaceAll(/\s+/g, '');
-	if(res && stripped_input !== input) res = expect_eq(expected, calculate(stripped_input), null, stripped_input);
+	if(without_space) {
+		const stripped_input = input.replaceAll(/\s+/g, '');
+		if(res && stripped_input !== input) res = expect_eq(expected, calculate(stripped_input), null, stripped_input);
+	}
 
 	return res;
 }
@@ -132,5 +134,6 @@ test("4 + a", "Unknown Variable");
 test("notafunc(123, 456)", "Unknown Function");
 
 test("def(n, 4), n", "4");
+test("def(n as 6), n * 2", "12", false);
 
 finish();
