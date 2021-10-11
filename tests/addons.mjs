@@ -1,6 +1,6 @@
 // Constants and functions for the calculator
 
-import { Token } from "../src/include.mjs";
+import { Token, Err } from "../src/include.mjs";
 
 
 // Allow functions to take token input
@@ -50,6 +50,8 @@ export default {
 				value = name.slice(2);
 				name = [name[0]];
 			}
+			else if(!value)
+				return new Err(Err.Other, "Missing Macro Parameters");
 
 			return [name[0], new Token(Token.Equals, '='), ...value];
 		}

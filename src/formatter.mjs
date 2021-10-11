@@ -126,7 +126,12 @@ class Formatter {
 					if(param.length) params.push(param);
 
 					// TODO: Check the return type so macros can return Err instances
-					tokens.unshift(...this.macros[token.data](...params));
+					const macro_res = this.macros[token.data](...params);
+
+					if(macro_res instanceof Err)
+						return { tokens: [], error: macro_res };
+					else
+						tokens.unshift(...macro_res);
 				}
 				else if(tokens[0] && tokens[0].data === '(') {
 					token.modifier.type = 'function';

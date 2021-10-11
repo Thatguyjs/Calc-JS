@@ -135,5 +135,6 @@ test("notafunc(123, 456)", "Unknown Function");
 
 test("def(n, 4), n", "4");
 test("def(n as 6), n * 2", "12", false);
+test("def(n)", "Missing Macro Parameters");
 
 finish();
