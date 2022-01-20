@@ -96,6 +96,21 @@ class Formatter {
 						result.push(fn_stack.shift());
 				}
 			}
+			else if(token.type === Token.Bracket) {
+				if(token.data === '[') {
+					stack.unshift(token);
+					result.push(token);
+					depth++;
+				}
+				else {
+					while(stack.length && stack[0].data !== '[')
+						result.push(stack.shift());
+
+					stack.shift();
+					result.push(token);
+					depth--;
+				}
+			}
 			else if(token.type === Token.Operator) {
 				while(stack.length && Formatter.get_precedence(stack[0]) >= Formatter.get_precedence(token)) {
 					result.push(stack.shift());
@@ -166,12 +181,12 @@ class Formatter {
 		let depth = 0;
 
 		for(let t in this.tokens) {
-			if(this.tokens[t].type === Token.Paren) {
-				if(this.tokens[t].data === '(') depth++;
+			if(this.tokens[t].type === Token.Paren || this.tokens[t].type === Token.Bracket) {
+				if(this.tokens[t].data === '(' || this.tokens[t].data === '[') depth++;
 				else depth--;
 			}
 
-			if(this.tokens[t].type !== Token.Comma || depth > 0)
+			if(depth > 0 || this.tokens[t].type !== Token.Comma)
 				current.tokens.push(this.tokens[t]);
 			else {
 				groups.push(current);

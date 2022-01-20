@@ -5,10 +5,14 @@ import Formatter from "./formatter.mjs";
 
 // Round a number to an arbitrary precision
 function round(number, precision) {
+	if(Array.isArray(number))
+		return number.map(tk => round(tk.data, precision));
+
 	if(typeof number !== 'number')
 		throw new TypeError(`round() expected a number, got ${typeof number}`);
 	if(typeof precision !== 'number')
 		throw new TypeError(`round() expected a precision, got ${typeof precision}`);
+
 
 	if(number.toString().includes('e')) return number;
 
@@ -63,6 +67,7 @@ class Parser {
 		if(op === undefined || t1 === undefined || t2 === undefined)
 			return { token: null, error: new Err(Err.InvalidOperation) };
 
+		// Apply negatives if needed
 		if(t1.modifier.negative && t1.modifier.depth > op.modifier.depth) {
 			t1.data = -t1.data;
 			t1.modifier.negative = false;
@@ -77,6 +82,7 @@ class Parser {
 			t2.modifier.negative = false;
 		}
 
+		// Perform the operation
 		switch(op.data) {
 			case '&':
 				value = t1.data & t2.data;
@@ -120,11 +126,53 @@ class Parser {
 				break;
 		}
 
+		// Remaining negatives
 		if(t1.modifier.negative)
 			value = -value;
 
 		return { token: new Token(Token.Number, value, { negative: false }), error: Err.none() };
 	}
+
+	static list_operate(op, t1, t2) {
+		let result = [];
+
+		if(t1.type === Token.List && t2.type === Token.List) {
+			if(t1.data.length !== t2.data.length) return { token: null, error: new Err(Err.InvalidOperation) };
+
+			for(let i = 0; i < t1.data.length; i++) {
+				if(t1.modifier.negative) t1.data[i].modifier.negative = !t1.data[i].modifier.negative;
+				if(t2.modifier.negative) t2.data[i].modifier.negative = !t2.data[i].modifier.negative;
+
+				const op_res = Parser.operate(op, t1.data[i], t2.data[i]);
+
+				if(op_res.error.has_error()) return op_res;
+				result.push(op_res.token);
+			}
+		}
+		else if(t1.type === Token.List) {
+			for(let t in t1.data) {
+				if(t1.modifier.negative) t1.data[t].modifier.negative = !t1.data[t].modifier.negative;
+
+				const op_res = Parser.operate(op, t1.data[t], t2);
+
+				if(op_res.error.has_error()) return op_res;
+				result.push(op_res.token);
+			}
+		}
+		else {
+			for(let t in t2.data) {
+				if(t2.modifier.negative) t2.data[t].modifier.negative = !t2.data[t].modifier.negative;
+
+				const op_res = Parser.operate(op, t1, t2.data[t]);
+
+				if(op_res.error.has_error()) return op_res;
+				result.push(op_res.token);
+			}
+		}
+
+		return { token: new Token(Token.List, result, { negative: false }), error: Err.none() };
+	}
+
 
 	// Parse the next expression
 	next() {
@@ -182,7 +230,12 @@ class Parser {
 				if(token.modifier.op_type === 'infix') {
 					let t1 = num_stack.shift();
 					let t2 = num_stack.shift();
-					let res = Parser.operate(token, t2, t1);
+					let res = null;
+
+					if(t1.type !== Token.List && t2.type !== Token.List)
+						res = Parser.operate(token, t2, t1);
+					else
+						res = Parser.list_operate(token, t2, t1);
 
 					if(res.error.has_error())
 						return { value: 0, error: res.error };
@@ -199,6 +252,22 @@ class Parser {
 				}
 			}
 
+			// Lists
+			else if(token.type === Token.Bracket) {
+				if(token.data === '[') num_stack.unshift(token);
+				else {
+					let items = [];
+
+					while(num_stack.length && num_stack[0].type !== Token.Bracket)
+						items.unshift(num_stack.shift());
+
+					let negative = num_stack[0].modifier.negative;
+
+					// Replace first element
+					num_stack[0] = new Token(Token.List, items, { negative });
+				}
+			}
+
 			// Function parameters
 			else if(token.type === Token.Paren) {
 				num_stack.unshift(token);
@@ -206,9 +275,7 @@ class Parser {
 			else if(token.type === Token.Comma) continue;
 
 			// A weird token appeared
-			else {
-				return { value: 0, error: new Err(Err.UnknownToken) };
-			}
+			else return { value: 0, error: new Err(Err.UnknownToken) };
 		}
 
 		if(error.has_error())
@@ -216,6 +283,15 @@ class Parser {
 
 		if(!num_stack.length && expr.type !== Formatter.Definition)
 			return { type: Parser.Expression, value: 0, error: new Err(Err.InvalidExpression) };
+
+		if(num_stack[0].type === Token.List) {
+			for(let t in num_stack[0].data) {
+				if(num_stack[0].modifier.negative ^ num_stack[0].data[t].modifier.negative)
+					num_stack[0].data[t].data = -num_stack[0].data[t].data;
+			}
+
+			num_stack[0].modifier.negative = false;
+		}
 
 		if(!error.has_error() && num_stack[0].modifier.negative)
 			num_stack[0].data = -num_stack[0].data;

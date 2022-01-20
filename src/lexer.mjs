@@ -16,7 +16,8 @@ class Lexer {
 
 	// Check if a '-' should be interpreted as a negative instead of a minus
 	static is_negative(last_tk) {
-		return !last_tk || last_tk.data === '(' || last_tk.data === ',' || last_tk.data === '=' ||
+		return !last_tk || last_tk.data === '(' || last_tk.data === '[' || last_tk.data === ',' ||
+			last_tk.data === '=' ||
 			(last_tk.type === Token.Operator && last_tk.modifier.op_type === 'infix');
 	}
 
@@ -36,6 +37,9 @@ class Lexer {
 
 		if(char === '(' || char === ')')
 			return Token.Paren;
+
+		if(char === '[' || char === ']')
+			return Token.Bracket;
 
 		if(char >= 'a' && char <= 'z')
 			return Token.Name;
@@ -59,6 +63,10 @@ class Lexer {
 			if(data === '!') return { op_type: 'postfix' };
 			else return { op_type: 'infix' };
 		}
+		else if(type === Token.Bracket && data.includes('[')) {
+			if(data.startsWith('-')) return { negative: true };
+			else return { negative: false };
+		}
 	}
 
 
@@ -68,6 +76,9 @@ class Lexer {
 			return new Err(Err.InvalidExpression);
 
 		if(last_tk.type === Token.Equals && tk.type === Token.Equals)
+			return new Err(Err.InvalidExpression);
+
+		if(last_tk.type === Token.Bracket && last_tk.data !== ']' && tk.data === ']')
 			return new Err(Err.InvalidExpression);
 
 		return Err.none();
@@ -105,6 +116,12 @@ class Lexer {
 			next_type = Lexer.char_type(ch, last_tk, true);
 		}
 
+		// Negative lists
+		if(chars === '-' && next_type === Token.Bracket) {
+			this.index++;
+			return new Token(next_type, ch, Lexer.token_mod(`-${ch}`, next_type));
+		}
+
 		const mod = Lexer.token_mod(chars, type);
 
 		if(type === Token.Number) {
@@ -125,8 +142,10 @@ class Lexer {
 			const last_tk = tk;
 			tk = this.next(last_tk);
 
-			const error = this.token_error(last_tk, tk);
-			if(error.has_error()) return { tokens: [], error };
+			if(tk) {
+				const error = this.token_error(last_tk, tk);
+				if(error.has_error()) return { tokens: [], error };
+			}
 		}
 
 		return { tokens, error: Err.none() };

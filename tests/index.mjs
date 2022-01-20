@@ -8,8 +8,14 @@ function calculate(input) {
 	let result = Calculator.eval(input, addons);
 	let res_list = [];
 
-	for(let r in result)
-		res_list.push(result[r].error.has_error() ? result[r].error.message : result[r].value.toString());
+	for(let r in result) {
+		let val = result[r].value;
+
+		if(Array.isArray(val)) val = `[${val.join(', ')}]`;
+		else val = val?.toString();
+
+		res_list.push(result[r].error.has_error() ? result[r].error.message : val);
+	}
 
 	return res_list.join(', ');
 }
@@ -122,15 +128,31 @@ test("floor(4.99)", "4");
 test("ceil(2.01)", "3");
 test("sum(2 + 3 / 2, 4 * 5)", "23.5");
 
+// Lists
+test("[1, 2, 3]", "[1, 2, 3]");
+test("-[1, 2, 3]", "[-1, -2, -3]");
+test("-[-1, 2, -3]", "[1, -2, 3]");
+test("[-1, 2, -3]", "[-1, 2, -3]");
+test("-[3, 4]", "[-3, -4]");
+test("[1 + 2 * 3, 6, 9 / 3 + 2]", "[7, 6, 5]");
+test("2.5 + [1, 2, 3]", "[3.5, 4.5, 5.5]");
+test("[1, 2, 3] + 2.5", "[3.5, 4.5, 5.5]");
+test("[sum(sin(90 * pi / 180), 4), cos(pi)]", "[5, -1]");
+
+// Errors
 test("(-1)!", "Invalid Operation");
 test("( )", "Invalid Expression");
 test("(", "Invalid Expression");
 test(")", "Invalid Expression");
+test("[ ]", "Invalid Expression");
+test("[", "Invalid Expression");
+test("]", "Invalid Expression");
 test("1, ,2", "Invalid Expression");
 test("a==1", "Invalid Expression");
 test("4 + a", "Unknown Variable");
 test("notafunc(123, 456)", "Unknown Function");
 
+// Macros
 test("def(n, 4), n", "4");
 test("def(n as 6), n * 2", "12", false);
 test("def(n)", "Missing Macro Parameters");

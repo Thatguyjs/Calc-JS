@@ -4,9 +4,11 @@ class Token {
 	static Number = 2;
 	static Operator = 3;
 	static Paren = 4;
-	static Name = 5;
-	static Comma = 6;
-	static Equals = 7;
+	static Bracket = 5;
+	static List = 6;
+	static Name = 7;
+	static Comma = 8;
+	static Equals = 9;
 
 	type = Token.None;
 	data = "";
