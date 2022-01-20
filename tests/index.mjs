@@ -138,6 +138,12 @@ test("[1 + 2 * 3, 6, 9 / 3 + 2]", "[7, 6, 5]");
 test("2.5 + [1, 2, 3]", "[3.5, 4.5, 5.5]");
 test("[1, 2, 3] + 2.5", "[3.5, 4.5, 5.5]");
 test("[sum(sin(90 * pi / 180), 4), cos(pi)]", "[5, -1]");
+test("[1, 2, 3] + [3, 2, 1]", "[4, 4, 4]");
+test("[1, 2, 3] * [sum(1, 2, 3), 2, 1]", "[6, 4, 3]");
+test("5 + [5, 10, 15] / 5", "[6, 7, 8]");
+test("a = 3, [a, a + 2, a / 1.5] + 4", "[7, 9, 6]");
+test("a = [1, 2, 3, 4, 5], a % 3 + 4", "[5, 6, 4, 5, 6]");
+test("-[4, 5] ^ 2", "[-16, -25]");
 
 // Errors
 test("(-1)!", "Invalid Operation");
@@ -147,6 +153,7 @@ test(")", "Invalid Expression");
 test("[ ]", "Invalid Expression");
 test("[", "Invalid Expression");
 test("]", "Invalid Expression");
+test("[1] + [1, 2]", "Invalid Operation");
 test("1, ,2", "Invalid Expression");
 test("a==1", "Invalid Expression");
 test("4 + a", "Unknown Variable");

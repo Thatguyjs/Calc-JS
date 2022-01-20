@@ -17,4 +17,5 @@ This is the current backend for my [Calculator](https://github.com/Thatguyjs/Cal
  - [x] Variables
  - [x] Multiple expressions
  - [x] Macros
+ - [x] Lists
  - [x] Pass all tests for my [Calculator](https://github.com/Thatguyjs/Calculator-Ext)

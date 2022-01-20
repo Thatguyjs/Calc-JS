@@ -71,6 +71,7 @@ class Formatter {
 		let fn_stack = [];
 
 		let depth = 0;
+		let list_depth = 0;
 
 		while(tokens.length) {
 			let token = tokens.shift();
@@ -100,7 +101,7 @@ class Formatter {
 				if(token.data === '[') {
 					stack.unshift(token);
 					result.push(token);
-					depth++;
+					list_depth++;
 				}
 				else {
 					while(stack.length && stack[0].data !== '[')
@@ -108,7 +109,7 @@ class Formatter {
 
 					stack.shift();
 					result.push(token);
-					depth--;
+					list_depth--;
 				}
 			}
 			else if(token.type === Token.Operator) {
@@ -168,7 +169,7 @@ class Formatter {
 			else result.push(token);
 		}
 
-		if(depth !== -1 || stack.length)
+		if(depth !== -1 || list_depth !== 0 || stack.length)
 			return { tokens: [], error: new Err(Err.InvalidExpression) };
 
 		return { tokens: result, error: Err.none() };

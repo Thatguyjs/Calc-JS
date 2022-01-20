@@ -201,8 +201,13 @@ class Parser {
 				if(token.modifier.type === 'constant') {
 					if(token.data in this.constants)
 						num_stack.unshift(new Token(Token.Number, this.constants[token.data]));
-					else if(token.data in this.variables)
-						num_stack.unshift(new Token(Token.Number, this.variables[token.data]));
+					else if(token.data in this.variables) {
+						if(Array.isArray(this.variables[token.data])) {
+							const toks = this.variables[token.data].map(n => new Token(Token.Number, n));
+							num_stack.unshift(new Token(Token.List, toks, { negative: false }));
+						}
+						else num_stack.unshift(new Token(Token.Number, this.variables[token.data]));
+					}
 					else {
 						error = new Err(Err.UnknownVariable);
 						break;
