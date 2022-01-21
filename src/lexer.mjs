@@ -55,7 +55,7 @@ class Lexer {
 
 	// Get the Token modifier
 	static token_mod(data, type) {
-		if(type === Token.Number) {
+		if(type === Token.Number || type === Token.Name) {
 			if(data.startsWith('-')) return { negative: true };
 			else return { negative: false };
 		}
@@ -114,6 +114,10 @@ class Lexer {
 			ch = this.source[++this.index];
 			if(!ch) break;
 			next_type = Lexer.char_type(ch, last_tk, true);
+
+			// Negative variables
+			if(chars === '-' && type === Token.Number && next_type === Token.Name)
+				type = Token.Name;
 		}
 
 		// Negative lists
@@ -127,6 +131,9 @@ class Lexer {
 		if(type === Token.Number) {
 			if(mod.negative) chars = chars.slice(1);
 			chars = +chars;
+		}
+		else if(type === Token.Name && mod.negative) {
+			chars = chars.slice(1);
 		}
 
 		return new Token(type, chars, mod);

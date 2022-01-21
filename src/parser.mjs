@@ -199,14 +199,20 @@ class Parser {
 			}
 			else if(token.type === Token.Name) {
 				if(token.modifier.type === 'constant') {
-					if(token.data in this.constants)
-						num_stack.unshift(new Token(Token.Number, this.constants[token.data]));
+					if(token.data in this.constants) {
+						const val = this.constants[token.data];
+						num_stack.unshift(new Token(Token.Number, token.modifier.negative ? -val : val));
+					}
+
 					else if(token.data in this.variables) {
 						if(Array.isArray(this.variables[token.data])) {
 							const toks = this.variables[token.data].map(n => new Token(Token.Number, n));
 							num_stack.unshift(new Token(Token.List, toks, { negative: false }));
 						}
-						else num_stack.unshift(new Token(Token.Number, this.variables[token.data]));
+						else {
+							const val = this.variables[token.data];
+							num_stack.unshift(new Token(Token.Number, token.modifier.negative ? -val : val));
+						}
 					}
 					else {
 						error = new Err(Err.UnknownVariable);
@@ -223,7 +229,15 @@ class Parser {
 						// TODO: Return an error here if `num_stack.length === 0`
 
 						num_stack.shift();
-						num_stack.unshift(...this.functions[token.data](...params));
+
+						let vals = this.functions[token.data](...params);
+
+						if(token.modifier.negative) {
+							for(let v in vals)
+								vals[v].data = -vals[v].data;
+						}
+
+						num_stack.unshift(...vals);
 					}
 					else {
 						error = new Err(Err.UnknownFunction);

@@ -115,12 +115,15 @@ test("a = 6, a + b, b = 4", "10");
 test("a = 4 * 2, b = 16 / 4 + 4, a + b", "16");
 test("a = 31, b = a + 11, a, b", "31, 42");
 test("a, b, a = 31, b = a + 11", "31, 42");
+test("x = 4, -x", "-4");
 
 // Functions & constants
 test("pi", "3.1415926536");
+test("-pi", "-3.1415926536");
 test("e", "2.7182818285");
 test("sqrt(36)", "6");
 test("sum(2, 5, 9, 16)", "32");
+test("-sum(2, 5, 9, 16)", "-32");
 test("sum()", "0");
 test("round(0.49)", "0");
 test("round(0.5)", "1");
