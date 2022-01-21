@@ -272,6 +272,9 @@ class Parser {
 					num_stack[0] = new Token(Token.List, items, { negative });
 				}
 			}
+			else if(token.type === Token.List) {
+				num_stack.unshift(token);
+			}
 
 			// Function parameters
 			else if(token.type === Token.Paren) {
