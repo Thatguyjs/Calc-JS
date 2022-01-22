@@ -64,9 +64,6 @@ class Parser {
 	static operate(op, t1, t2) {
 		let value = NaN;
 
-		if(op === undefined || t1 === undefined || t2 === undefined)
-			return { token: null, error: new Err(Err.InvalidOperation) };
-
 		// Apply negatives if needed
 		if(t1.modifier.negative && t1.modifier.depth > op.modifier.depth) {
 			t1.data = -t1.data;
@@ -118,9 +115,9 @@ class Parser {
 				value = round(t1.data * (10 ** t2.data), 10);
 				break;
 			case '!':
-				if(t1.data < 0) {
-					return { token: null, error: new Err(Err.InvalidOperation) };
-				}
+				if(t1.data < 0)
+					return { token: null, error: new Err(Err.InvalidOperation, t1.modifier) };
+
 				value = t1.data;
 				while(--t1.data > 1) value *= t1.data;
 				break;
@@ -137,7 +134,11 @@ class Parser {
 		let result = [];
 
 		if(t1.type === Token.List && t2.type === Token.List) {
-			if(t1.data.length !== t2.data.length) return { token: null, error: new Err(Err.InvalidOperation) };
+			if(t1.data.length !== t2.data.length)
+				return { token: null, error: new Err(Err.InvalidOperation, {
+					start: t1.modifier.start,
+					end: t2.modifier.end
+				}) };
 
 			for(let i = 0; i < t1.data.length; i++) {
 				if(t1.modifier.negative) t1.data[i].modifier.negative = !t1.data[i].modifier.negative;
@@ -214,8 +215,9 @@ class Parser {
 							num_stack.unshift(new Token(Token.Number, token.modifier.negative ? -val : val));
 						}
 					}
+
 					else {
-						error = new Err(Err.UnknownVariable);
+						error = new Err(Err.UnknownVariable, token.modifier);
 						break;
 					}
 				}
@@ -240,7 +242,7 @@ class Parser {
 						num_stack.unshift(...vals);
 					}
 					else {
-						error = new Err(Err.UnknownFunction);
+						error = new Err(Err.UnknownFunction, token.modifier);
 						break;
 					}
 				}
@@ -250,6 +252,16 @@ class Parser {
 					let t1 = num_stack.shift();
 					let t2 = num_stack.shift();
 					let res = null;
+
+					if(!t2) {
+						let range = {
+							start: Math.min(t1.modifier.start, token.modifier.start),
+							end: Math.max(t1.modifier.end, token.modifier.end)
+						};
+
+						error = new Err(Err.InvalidOperation, range);
+						break;
+					}
 
 					if(t1.type !== Token.List && t2.type !== Token.List)
 						res = Parser.operate(token, t2, t1);
@@ -262,6 +274,11 @@ class Parser {
 					num_stack.unshift(res.token);
 				}
 				else if(token.modifier.op_type === 'postfix') {
+					if(!num_stack.length) {
+						error = new Err(Err.InvalidOperation, token.modifier);
+						break;
+					}
+
 					let res = Parser.operate(token, num_stack.shift(), new Token(Token.None));
 
 					if(res.error.has_error())
@@ -297,15 +314,17 @@ class Parser {
 			else if(token.type === Token.Comma) continue;
 
 			// A weird token appeared
-			else return { value: 0, error: new Err(Err.UnknownToken) };
+			else return { value: 0, error: new Err(Err.UnknownToken, token.modifier) };
 		}
 
 		if(error.has_error())
 			return { value: 0, error };
 
+		// TODO: Include location range
 		if(!num_stack.length && expr.type !== Formatter.Definition)
 			return { type: Parser.Expression, value: 0, error: new Err(Err.InvalidExpression) };
 
+		// Apply negatives to all items in a list
 		if(num_stack[0].type === Token.List) {
 			for(let t in num_stack[0].data) {
 				if(num_stack[0].modifier.negative ^ num_stack[0].data[t].modifier.negative)

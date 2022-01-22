@@ -54,32 +54,41 @@ class Lexer {
 	}
 
 	// Get the Token modifier
-	static token_mod(data, type) {
+	static token_mod(data, type, start) {
+		const range = { start, end: start + data.length - 1 };
+
 		if(type === Token.Number || type === Token.Name) {
-			if(data.startsWith('-')) return { negative: true };
-			else return { negative: false };
+			if(data.startsWith('-')) return { negative: true, ...range };
+			else return { negative: false, ...range };
 		}
 		else if(type === Token.Operator) {
-			if(data === '!') return { op_type: 'postfix' };
-			else return { op_type: 'infix' };
+			if(data === '!') return { op_type: 'postfix', ...range };
+			else return { op_type: 'infix', ...range };
 		}
 		else if(type === Token.Bracket && data.includes('[')) {
-			if(data.startsWith('-')) return { negative: true };
-			else return { negative: false };
+			if(data.startsWith('-')) return { negative: true, ...range };
+			else return { negative: false, ...range };
 		}
+
+		return range;
 	}
 
 
 	// Check for errors with token sequences
-	token_error(last_tk, tk) {
+	static token_error(last_tk, tk) {
+		const whole_range = {
+			start: last_tk.modifier.start,
+			end: tk.modifier.end
+		};
+
 		if(last_tk.type === Token.Comma && tk.type === Token.Comma)
-			return new Err(Err.InvalidExpression);
+			return new Err(Err.InvalidExpression, whole_range);
 
 		if(last_tk.type === Token.Equals && tk.type === Token.Equals)
-			return new Err(Err.InvalidExpression);
+			return new Err(Err.InvalidExpression, whole_range);
 
 		if(last_tk.type === Token.Bracket && last_tk.data !== ']' && tk.data === ']')
-			return new Err(Err.InvalidExpression);
+			return new Err(Err.InvalidExpression, whole_range);
 
 		return Err.none();
 	}
@@ -99,12 +108,15 @@ class Lexer {
 			type = Lexer.char_type(ch, last_tk);
 		}
 
-		// 1-character tokens
-		if(type !== Token.Number && type !== Token.Name) {
-			this.index++;
-			return new Token(type, ch, Lexer.token_mod(ch, type));
-		}
+		// Parentheses with nothing inside
+		if(last_tk && last_tk.data === '(' && ch === ')' && type === Token.Paren)
+			last_tk.modifier.type = 'empty';
 
+		// All other 1-character tokens
+		if(type !== Token.Number && type !== Token.Name)
+			return new Token(type, ch, Lexer.token_mod(ch, type, this.index++));
+
+		const start_loc = this.index;
 		let chars = "";
 		let next_type = type;
 
@@ -123,10 +135,10 @@ class Lexer {
 		// Negative lists
 		if(chars === '-' && next_type === Token.Bracket) {
 			this.index++;
-			return new Token(next_type, ch, Lexer.token_mod(`-${ch}`, next_type));
+			return new Token(next_type, ch, Lexer.token_mod(`-${ch}`, next_type, start_loc));
 		}
 
-		const mod = Lexer.token_mod(chars, type);
+		const mod = Lexer.token_mod(chars, type, start_loc);
 
 		if(type === Token.Number) {
 			if(mod.negative) chars = chars.slice(1);
@@ -150,7 +162,7 @@ class Lexer {
 			tk = this.next(last_tk);
 
 			if(tk) {
-				const error = this.token_error(last_tk, tk);
+				const error = Lexer.token_error(last_tk, tk);
 				if(error.has_error()) return { tokens: [], error };
 			}
 		}

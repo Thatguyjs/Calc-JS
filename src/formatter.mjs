@@ -21,10 +21,16 @@ class Formatter {
 
 	tokens = [];
 	macros = {};
+	end_range = { start: null, end: null };
 
 	constructor(tokens, macros={}) {
 		this.tokens = tokens;
 		this.macros = macros;
+
+		this.end_range = {
+			start: this.tokens[this.tokens.length - 1].modifier.start,
+			end: this.tokens[this.tokens.length - 1].modifier.end
+		};
 	}
 
 	static get_precedence(token) {
@@ -40,18 +46,23 @@ class Formatter {
 		const first_tk = token_list[0];
 		if(!first_tk) return;
 
+		const range = {
+			start: token.modifier.start,
+			end: token.modifier.end
+		};
+
 		// Implicit multiplication
 		if(token.type === Token.Number && first_tk.data === '(')
-			token_list.unshift(new Token(Token.Operator, '*', { op_type: 'infix' }));
+			token_list.unshift(new Token(Token.Operator, '*', { op_type: 'infix', ...range }));
 
 		else if(token.data === ')' && first_tk.type === Token.Number)
-			token_list.unshift(new Token(Token.Operator, '*', { op_type: 'infix' }));
+			token_list.unshift(new Token(Token.Operator, '*', { op_type: 'infix', ...range }));
 
 		else if(token.data === ')' && first_tk.type === Token.Name)
-			token_list.unshift(new Token(Token.Operator, '*', { op_type: 'infix' }));
+			token_list.unshift(new Token(Token.Operator, '*', { op_type: 'infix', ...range }));
 
 		else if(token.type === Token.Number && first_tk.type === Token.Name)
-			token_list.unshift(new Token(Token.Operator, '*', { op_type: 'infix' }));
+			token_list.unshift(new Token(Token.Operator, '*', { op_type: 'infix', ...range }));
 	}
 
 	// Get the group type (Definition or Expression)
@@ -65,11 +76,12 @@ class Formatter {
 	// Correctly order tokens converting from infix to prefix
 	order(tokens) {
 		let result = [];
-		let stack = [new Token(Token.Paren, '(')];
-		tokens.push(new Token(Token.Paren, ')'));
+		let stack = [new Token(Token.Paren, '(', { start: 0, end: 0 })];
+		tokens.push(new Token(Token.Paren, ')', { start: this.end_range.start + 1, end: this.end_range.end + 1 }));
 
 		let fn_stack = [];
 
+		let last_paren = 0; // Last opening parenthesis "(" index
 		let depth = 0;
 		let list_depth = 0;
 
@@ -83,12 +95,18 @@ class Formatter {
 			if(token.type === Token.Paren) {
 				if(token.data === '(') {
 					stack.unshift(token);
+					last_paren = token.modifier.start;
 					depth++;
 				}
 				else {
-					while(stack.length && stack[0].data !== '(') {
+					if(stack[0] && stack[0].data === '(' && stack[0].modifier.type === 'empty')
+						return { tokens: [], error: new Err(Err.InvalidExpression, {
+							start: last_paren,
+							end: token.modifier.end
+						}) };
+
+					while(stack.length && stack[0].data !== '(')
 						result.push(stack.shift());
-					}
 
 					stack.shift();
 					depth--;
@@ -152,6 +170,8 @@ class Formatter {
 				else if(tokens[0] && tokens[0].data === '(') {
 					token.modifier.type = 'function';
 					fn_stack.unshift(token);
+
+					tokens[0].modifier.type = 'function';
 					result.push(tokens[0]); // Mark the start of function parameters
 				}
 				else {
@@ -169,8 +189,28 @@ class Formatter {
 			else result.push(token);
 		}
 
-		if(depth !== -1 || list_depth !== 0 || stack.length)
-			return { tokens: [], error: new Err(Err.InvalidExpression) };
+		if(depth !== -1 || list_depth !== 0) {
+			let range = null;
+
+			if(stack.length) {
+				range = {
+					start: stack[0].modifier.start,
+					end: stack[0].modifier.end
+				};
+			}
+			else if(depth !== -1) {
+				range = {
+					start: last_paren,
+					end: this.end_range.end
+				};
+			}
+			else {
+				// TODO: List range
+				range = this.end_range;
+			}
+
+			return { tokens: [], error: new Err(Err.InvalidExpression, range) };
+		}
 
 		return { tokens: result, error: Err.none() };
 	}

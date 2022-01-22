@@ -4,6 +4,16 @@ import addons from "./addons.mjs";
 import Calculator from "../src/include.mjs";
 
 
+function error_string(err) {
+	if(err.location.start === null)
+		return `Error: ${err.message}`;
+	else if(err.location.start === err.location.end)
+		return `Error at ${err.location.start}: ${err.message}`;
+	else
+		return `Error from ${err.location.start} to ${err.location.end}: ${err.message}`;
+}
+
+
 function calculate(input) {
 	let result = Calculator.eval(input, addons);
 	let res_list = [];
@@ -14,7 +24,7 @@ function calculate(input) {
 		if(Array.isArray(val)) val = `[${val.join(', ')}]`;
 		else val = val?.toString();
 
-		res_list.push(result[r].error.has_error() ? result[r].error.message : val);
+		res_list.push(result[r].error.has_error() ? error_string(result[r].error) : val);
 	}
 
 	return res_list.join(', ');
@@ -149,22 +159,31 @@ test("a = [1, 2, 3, 4, 5], a % 3 + 4", "[5, 6, 4, 5, 6]");
 test("-[4, 5] ^ 2", "[-16, -25]");
 
 // Errors
-test("(-1)!", "Invalid Operation");
-test("( )", "Invalid Expression");
-test("(", "Invalid Expression");
-test(")", "Invalid Expression");
-test("[ ]", "Invalid Expression");
-test("[", "Invalid Expression");
-test("]", "Invalid Expression");
-test("[1] + [1, 2]", "Invalid Operation");
-test("1, ,2", "Invalid Expression");
-test("a==1", "Invalid Expression");
-test("4 + a", "Unknown Variable");
-test("notafunc(123, 456)", "Unknown Function");
+test("(-1)!", "Error from 1 to 2: Invalid Operation");
+test("( )", "Error from 0 to 2: Invalid Expression", false);
+test("()", "Error from 0 to 1: Invalid Expression");
+test("(", "Error at 0: Invalid Expression");
+test(")", "Error at 0: Invalid Expression");
+test("[ ]", "Error from 0 to 2: Invalid Expression", false);
+test("[]", "Error from 0 to 1: Invalid Expression");
+test("[", "Error at 0: Invalid Expression");
+test("]", "Error at 0: Invalid Expression");
+test("[1] + [1, 2]", "Error: Invalid Operation");
+test("1, ,2", "Error from 1 to 3: Invalid Expression", false);
+test("1,,2", "Error from 1 to 2: Invalid Expression");
+test("a==1", "Error from 1 to 2: Invalid Expression");
+test("4 + a", "Error at 4: Unknown Variable", false);
+test("4+a", "Error at 2: Unknown Variable");
+test("notafunc(123, 456)", "Error from 0 to 7: Unknown Function");
+test("2 *", "Error from 0 to 2: Invalid Operation", false);
+test("* 2", "Error from 0 to 2: Invalid Operation", false);
+test("2 * ()", "Error from 4 to 5: Invalid Expression", false);
+test("2*()", "Error from 2 to 3: Invalid Expression", false);
+test("() * 2", "Error from 0 to 1: Invalid Expression");
 
 // Macros
 test("def(n, 4), n", "4");
 test("def(n as 6), n * 2", "12", false);
-test("def(n)", "Missing Macro Parameters");
+test("def(n)", "Error: Missing Macro Parameters");
 
 finish();

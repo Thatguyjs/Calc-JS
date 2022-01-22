@@ -22,10 +22,18 @@ class Err {
 
 	code = null;
 	message = "";
+	location = { start: null, end: null };
 
-	constructor(code, message) {
+	constructor(code, message, location) {
+		if(typeof message === 'object') {
+			location = message;
+			message = null;
+		}
+
 		this.code = code;
 		this.message = message ?? messages[code] ?? "";
+		this.location.start = location?.start ?? null;
+		this.location.end = location?.end ?? null;
 	}
 
 	static none() {
