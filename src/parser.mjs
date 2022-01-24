@@ -127,7 +127,16 @@ class Parser {
 		if(t1.modifier.negative)
 			value = -value;
 
-		return { token: new Token(Token.Number, value, { negative: false }), error: Err.none() };
+		if(!t2) t2 = t1;
+
+		return {
+			token: new Token(Token.Number, value, {
+				negative: false,
+				start: t1.modifier.start,
+				end: Math.max(t2.modifier.end, op.modifier.end)
+			}),
+			error: Err.none()
+		};
 	}
 
 	static list_operate(op, t1, t2) {
