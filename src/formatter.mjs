@@ -131,9 +131,9 @@ class Formatter {
 				}
 			}
 			else if(token.type === Token.Operator) {
-				while(stack.length && Formatter.get_precedence(stack[0]) >= Formatter.get_precedence(token)) {
+				while(stack.length && Formatter.get_precedence(stack[0]) >= Formatter.get_precedence(token))
 					result.push(stack.shift());
-				}
+
 				stack.unshift(token);
 			}
 			else if(token.type === Token.Name) {
@@ -156,16 +156,19 @@ class Formatter {
 						else param.push(tokens.shift());
 					}
 
-					tokens.shift();
+					const end_paren = tokens.shift();
 					if(param.length) params.push(param);
 
-					// TODO: Check the return type so macros can return Err instances
 					const macro_res = this.macros[token.data](...params);
 
-					if(macro_res instanceof Err)
+					if(macro_res instanceof Err) {
+						// Default location if none is specified
+						if(macro_res.location.start === null)
+							macro_res.location = { start: token.modifier.start, end: end_paren.modifier.end };
+
 						return { tokens: [], error: macro_res };
-					else
-						tokens.unshift(...macro_res);
+					}
+					else tokens.unshift(...macro_res);
 				}
 				else if(tokens[0] && tokens[0].data === '(') {
 					token.modifier.type = 'function';

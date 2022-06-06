@@ -186,6 +186,6 @@ test("+ 3 * 2 - 1", "Error from 0 to 6: Invalid Operation", false);
 // Macros
 test("def(n, 4), n", "4");
 test("def(n as 6), n * 2", "12", false);
-test("def(n)", "Error: Missing Macro Parameters");
+test("def(n)", "Error from 0 to 5: Missing Macro Parameters");
 
 finish();
