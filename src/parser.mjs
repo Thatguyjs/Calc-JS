@@ -241,14 +241,23 @@ class Parser {
 
 						num_stack.shift();
 
-						let vals = this.functions[token.data](...params);
+						const result = this.functions[token.data](...params);
 
-						if(token.modifier.negative) {
-							for(let v in vals)
-								vals[v].data = -vals[v].data;
+						if(result instanceof Err) {
+							if(result.location.start === null)
+								result.location = {
+									start: token.modifier.start,
+									end: token.modifier.end
+								};
+
+							error = result;
+							break;
 						}
 
-						num_stack.unshift(...vals);
+						if(token.modifier.negative)
+							result.modifier.negative = true;
+
+						num_stack.unshift(result);
 					}
 					else {
 						error = new Err(Err.UnknownFunction, token.modifier);

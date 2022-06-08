@@ -8,10 +8,28 @@ function tk_wrap(call) {
 	return function(...tokens) {
 		let nums = [];
 
-		for(let t in tokens)
-			nums.push(tokens[t].data);
+		for(let t in tokens) {
+			if(tokens[t].modifier.negative) {
+				tokens[t].data = -tokens[t].data;
+				tokens[t].modifier.negative = false;
+			}
 
-		return [new Token(Token.Number, call(...nums))];
+			nums.push(tokens[t].data);
+		}
+
+		const result = call(...nums);
+
+		if(isNaN(result)) {
+			const last_tk = tokens[tokens.length - 1];
+
+			const location = {
+				start: tokens[0]?.modifier?.start ?? null,
+				end: last_tk?.modifier?.end ?? null
+			};
+
+			return new Err(Err.Other, "Invalid Value", location);
+		}
+		else return new Token(Token.Number, result);
 	}
 }
 

@@ -132,6 +132,8 @@ test("pi", "3.1415926536");
 test("-pi", "-3.1415926536");
 test("e", "2.7182818285");
 test("sqrt(36)", "6");
+test("sqrt(-1)", "Error from 5 to 6: Invalid Value");
+test("sqrt()", "Error from 0 to 3: Invalid Value");
 test("sum(2, 5, 9, 16)", "32");
 test("-sum(2, 5, 9, 16)", "-32");
 test("sum()", "0");
