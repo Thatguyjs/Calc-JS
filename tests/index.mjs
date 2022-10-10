@@ -184,6 +184,9 @@ test("2*()", "Error from 2 to 3: Invalid Expression", false);
 test("() * 2", "Error from 0 to 1: Invalid Expression");
 test("2 * 3 +", "Error from 0 to 6: Invalid Operation", false);
 test("+ 3 * 2 - 1", "Error from 0 to 6: Invalid Operation", false);
+test("abs(1 + )", "Error at 6: Invalid Operation", false);
+test("abs(1 + !)", "Error at 6: Invalid Operation", false);
+test("abs(1+!)", "Error at 5: Invalid Operation", false);
 
 // Macros
 test("def(n, 4), n", "4");

@@ -41,6 +41,8 @@ export default {
 	},
 
 	functions: {
+		abs: tk_wrap(Math.abs),
+
 		sin: tk_wrap(Math.sin),
 		cos: tk_wrap(Math.cos),
 		tan: tk_wrap(Math.tan),

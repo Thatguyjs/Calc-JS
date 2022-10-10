@@ -64,6 +64,11 @@ class Parser {
 	static operate(op, t1, t2) {
 		let value = NaN;
 
+		if(t1.type !== Token.Number)
+			return { token: null, error: new Err(Err.InvalidOperation, op.modifier) };
+		if(t1.type !== Token.Number)
+			return { token: null, error: new Err(Err.InvalidOperation, op.modifier) };
+
 		// Apply negatives if needed
 		if(t1.modifier.negative && t1.modifier.depth > op.modifier.depth) {
 			t1.data = -t1.data;
