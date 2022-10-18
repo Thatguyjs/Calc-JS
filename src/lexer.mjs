@@ -90,6 +90,10 @@ class Lexer {
 		if(last_tk.type === Token.Bracket && last_tk.data !== ']' && tk.data === ']')
 			return new Err(Err.InvalidExpression, whole_range);
 
+		if(last_tk.type === Token.Operator && tk.type === Token.Operator &&
+			last_tk.modifier.op_type !== 'postfix' && tk.modifier.op_type === 'postfix')
+			return new Err(Err.InvalidOperation, whole_range);
+
 		return Err.none();
 	}
 

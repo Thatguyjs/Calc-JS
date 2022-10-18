@@ -52,10 +52,10 @@ function finish() {
 		if(!results[r].success) failed.push(results[r]);
 	}
 
-	console.log(`${results.length - failed.length} of ${results.length} tests passed.`);
+	console.info(`${results.length - failed.length} of ${results.length} tests passed.`);
 
 	for(let f in failed) {
-		console.log(`Failed test "${failed[f].info || failed[f].func}": expected "${failed[f].expected}", got "${failed[f].actual}"`);
+		console.error(`Failed test "${failed[f].info || failed[f].func}": expected "${failed[f].expected}", got "${failed[f].actual}"`);
 	}
 }
 

@@ -66,7 +66,7 @@ class Parser {
 
 		if(t1.type !== Token.Number)
 			return { token: null, error: new Err(Err.InvalidOperation, op.modifier) };
-		if(t1.type !== Token.Number)
+		if(t2.type !== Token.Number)
 			return { token: null, error: new Err(Err.InvalidOperation, op.modifier) };
 
 		// Apply negatives if needed
@@ -302,7 +302,7 @@ class Parser {
 						break;
 					}
 
-					let res = Parser.operate(token, num_stack.shift(), new Token(Token.None));
+					let res = Parser.operate(token, num_stack.shift(), new Token(Token.Number, 0));
 
 					if(res.error.has_error())
 						return { value: 0, error: res.error };
