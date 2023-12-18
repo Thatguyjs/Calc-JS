@@ -2,9 +2,6 @@
 A Math Parser for JavaScript.  
 This is the current backend for my [Calculator](https://github.com/Thatguyjs/Calculator-Ext)
 
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/Thatguyjs/Calc-JS.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Thatguyjs/Calc-JS/alerts/)
-[![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/Thatguyjs/Calc-JS.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Thatguyjs/Calc-JS/context:javascript)
-
 
 ### Feature Support
  - [x] Basic operators (prefix & postfix)
